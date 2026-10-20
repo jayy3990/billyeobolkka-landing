@@ -1,0 +1,1 @@
+{ "buildCommand": "sh build.sh", "outputDirectory": "." }

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>빌려볼까 사전신청</title>
+<meta name="description" content="관심 분야만 고르면 AI가 읽을 책을 추천하고, 내 근처 도서관에 있는지까지 알려 줘요.">
+<style>
+  :root { --primary:#4f46e5; --soft:#e8e7fd; --hi:#fbbf24; --text:#1d2230; --muted:#5b6275; --bg:#f6f7fb; --surface:#fff; --line:#d9dce8; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Pretendard","Noto Sans KR","Malgun Gothic",system-ui,-apple-system,sans-serif; color:var(--text); background:var(--bg); line-height:1.6; font-size:18px; word-break:keep-all; }
+  .wrap { max-width:720px; margin:0 auto; padding:0 20px; }
+  section { padding:64px 0; }
+  header { padding:20px 0; }
+  .brand { display:flex; align-items:center; gap:12px; font-size:24px; font-weight:800; }
+  .brand svg { flex:none; width:48px; height:48px; }
+  .tag { display:inline-block; padding:6px 16px; border-radius:999px; background:var(--soft); color:var(--primary); font-weight:800; font-size:16px; }
+  h1 { font-size:clamp(36px,9vw,56px); line-height:1.2; font-weight:800; letter-spacing:-1px; margin-top:16px; }
+  h2 { font-size:clamp(28px,7vw,40px); line-height:1.25; font-weight:800; margin-top:12px; }
+  em { font-style:normal; color:var(--primary); }
+  p.lead { margin-top:16px; font-size:20px; color:var(--muted); }
+  .hero { padding:40px 0 64px; }
+  .btn { display:inline-block; margin-top:28px; padding:16px 28px; border-radius:14px; background:var(--primary); color:#fff; font-size:20px; font-weight:800; text-decoration:none; border:0; cursor:pointer; font-family:inherit; }
+  .btn:disabled { opacity:.6; cursor:wait; }
+  .btn:focus-visible, input:focus-visible { outline:3px solid var(--hi); outline-offset:2px; }
+  .card { margin-top:20px; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:22px 24px; }
+  .steps { list-style:none; margin-top:20px; display:grid; gap:14px; }
+  .steps li { display:flex; gap:16px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:18px 20px; }
+  .steps .n { flex:none; width:44px; height:44px; border-radius:50%; background:var(--primary); color:#fff; font-weight:800; font-size:22px; display:flex; align-items:center; justify-content:center; }
+  .steps b { display:block; font-size:20px; }
+  .steps span { color:var(--muted); font-size:17px; }
+  .band { background:var(--primary); color:#fff; }
+  .band .tag { background:#fff; }
+  .band em { color:var(--hi); }
+  .band p.lead { color:var(--soft); }
+  label { display:block; margin-top:18px; font-weight:800; }
+  input[type=text], input[type=email] { width:100%; margin-top:6px; padding:14px 16px; font-size:18px; font-family:inherit; border:2px solid var(--line); border-radius:12px; background:#fff; color:var(--text); }
+  .check { display:flex; gap:10px; align-items:flex-start; margin-top:18px; font-weight:400; color:var(--muted); font-size:16px; }
+  .check input { flex:none; width:22px; height:22px; margin-top:3px; }
+  #msg { margin-top:18px; padding:14px 16px; border-radius:12px; font-weight:700; display:none; }
+  #msg.ok { display:block; background:#e6f6ec; color:#14532d; }
+  #msg.err { display:block; background:#fdecec; color:#7f1d1d; }
+  footer { padding:32px 0 48px; color:var(--muted); font-size:16px; }
+</style></head>
+<body>
+<header><div class="wrap"><div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true"><rect width="128" height="128" rx="28" fill="#4f46e5"/><path d="M24 48 C40 44 53 46 61 54 L61 96 C53 89 40 87 24 91 Z" fill="#fff"/><path d="M104 48 C88 44 75 46 67 54 L67 96 C75 89 88 87 104 91 Z" fill="#fff"/><path d="M94 15 L96.8 23.2 L105 26 L96.8 28.8 L94 37 L91.2 28.8 L83 26 L91.2 23.2 Z" fill="#fbbf24"/></svg> 빌려볼까</div></div></header>
+
+<main>
+<section class="hero"><div class="wrap">
+  <span class="tag">사전신청 오픈</span>
+  <h1>오늘 빌릴 책,<br><em>같이 골라 볼까요?</em></h1>
+  <p class="lead">관심 분야만 고르면 AI가 읽을 책을 추천하고, 내 근처 도서관에 있는지까지 알려 줘요.</p>
+  <a class="btn" href="#apply">사전신청 하기</a>
+</div></section>
+
+<section id="problem"><div class="wrap">
+  <span class="tag">문제</span>
+  <h2>도서관에 왔는데,<br><em>뭘 빌릴지</em> 모르겠다면?</h2>
+  <div class="card"><p>지금은 인터넷에서 베스트셀러나 후기를 검색해 보고, 그 책을 도서관에서 찾아 빌려요. 고르는 데만 시간이 한참 걸려요.</p></div>
+</div></section>
+
+<section id="solution"><div class="wrap">
+  <span class="tag">해결</span>
+  <h2>관심 분야만 고르면<br><em>AI가 책을 골라</em> 줘요</h2>
+  <ol class="steps">
+    <li><div class="n">1</div><div><b>관심 분야 설정 + AI 추천</b><span>좋아하는 분야를 고르면 읽을 책을 추천해요</span></div></li>
+    <li><div class="n">2</div><div><b>근처 도서관 소장 확인</b><span>추천받은 책이 가까운 도서관에 있는지 알려 줘요</span></div></li>
+    <li><div class="n">3</div><div><b>취향 프로필</b><span>읽은 책에 별점을 주면 추천이 점점 정확해져요</span></div></li>
+  </ol>
+</div></section>
+
+<section id="benefit" class="band"><div class="wrap">
+  <span class="tag">혜택</span>
+  <h2>사전신청하면<br><em>가장 먼저</em> 알려 드려요</h2>
+  <p class="lead">출시되면 가장 먼저 알려 드려요.</p>
+</div></section>
+
+<section id="apply"><div class="wrap">
+  <span class="tag">신청</span>
+  <h2>지금 <em>사전신청</em> 해요</h2>
+  <form id="form" class="card" novalidate>
+    <label for="name">이름</label>
+    <input id="name" type="text" maxlength="50" autocomplete="name" required>
+    <label for="email">이메일</label>
+    <input id="email" type="email" autocomplete="email" required>
+    <label class="check"><input id="agree" type="checkbox" required><span>출시 안내를 받는 데에만 이름과 이메일을 써요. 동의해요.</span></label>
+    <button class="btn" id="submit" type="submit">사전신청 하기</button>
+    <div id="msg" role="status" aria-live="polite"></div>
+  </form>
+</div></section>
+</main>
+
+<footer><div class="wrap">빌려볼까 · 오늘 빌릴 책, 같이 골라 볼까요?</div></footer>
+
+<script src="config.js"></script>
+<script>
+  var form = document.getElementById('form'), msg = document.getElementById('msg'), btn = document.getElementById('submit');
+  function show(kind, text) { msg.className = kind; msg.textContent = text; }
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('name').value.trim();
+    var email = document.getElementById('email').value.trim();
+    if (!name) return show('err', '이름을 적어 주세요.');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return show('err', '이메일 모양을 확인해 주세요.');
+    if (!document.getElementById('agree').checked) return show('err', '동의에 체크해 주세요.');
+    btn.disabled = true; show('', '');
+    fetch(window.SUPABASE_URL + '/rest/v1/signups', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ name: name, email: email })
+    }).then(function (r) {
+      if (r.status === 201) { form.reset(); show('ok', '신청했어요! 출시되면 가장 먼저 알려 드릴게요.'); }
+      else if (r.status === 409) show('ok', '이미 신청하셨어요. 출시되면 가장 먼저 알려 드릴게요.');
+      else show('err', '신청이 잘 안 됐어요. 잠시 뒤에 다시 해 주세요.');
+    }).catch(function () { show('err', '인터넷 연결을 확인하고 다시 해 주세요.'); })
+      .then(function () { btn.disabled = false; });
+  });
+</script>
+</body></html>
