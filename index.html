@@ -35,6 +35,7 @@
   input[type=text], input[type=email] { width:100%; margin-top:6px; padding:14px 16px; font-size:18px; font-family:inherit; border:2px solid var(--line); border-radius:12px; background:#fff; color:var(--text); }
   .check { display:flex; gap:10px; align-items:flex-start; margin-top:18px; font-weight:400; color:var(--muted); font-size:16px; }
   .check input { flex:none; width:22px; height:22px; margin-top:3px; }
+  .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
   #msg { margin-top:18px; padding:14px 16px; border-radius:12px; font-weight:700; display:none; }
   #msg.ok { display:block; background:#e6f6ec; color:#14532d; }
   #msg.err { display:block; background:#fdecec; color:#7f1d1d; }
@@ -82,6 +83,7 @@
     <label for="email">이메일</label>
     <input id="email" type="email" autocomplete="email" required>
     <label class="check"><input id="agree" type="checkbox" required><span>출시 안내를 받는 데에만 이름과 이메일을 써요. 동의해요.</span></label>
+    <div class="hp" aria-hidden="true"><label for="website">웹사이트 (비워 두세요)</label><input id="website" type="text" tabindex="-1" autocomplete="off"></div>
     <button class="btn" id="submit" type="submit">사전신청 하기</button>
     <div id="msg" role="status" aria-live="polite"></div>
   </form>
@@ -101,7 +103,13 @@
     if (!name) return show('err', '이름을 적어 주세요.');
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return show('err', '이메일 모양을 확인해 주세요.');
     if (!document.getElementById('agree').checked) return show('err', '동의에 체크해 주세요.');
-    btn.disabled = true; show('', '');
+    btn.disabled = true; btn.textContent = '보내는 중...'; show('', '');
+    // Supabase 저장과 별개로, Resend 안내 메일 요청을 같이 보내요 (메일이 실패해도 신청 결과에는 영향 없음)
+    fetch('/api/signup-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, website: document.getElementById('website').value })
+    }).catch(function () {});
     fetch(window.SUPABASE_URL + '/rest/v1/signups', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY, 'Prefer': 'return=minimal' },
@@ -111,7 +119,7 @@
       else if (r.status === 409) show('ok', '이미 신청하셨어요. 출시되면 가장 먼저 알려 드릴게요.');
       else show('err', '신청이 잘 안 됐어요. 잠시 뒤에 다시 해 주세요.');
     }).catch(function () { show('err', '인터넷 연결을 확인하고 다시 해 주세요.'); })
-      .then(function () { btn.disabled = false; });
+      .then(function () { btn.disabled = false; btn.textContent = '사전신청 하기'; });
   });
 </script>
 </body></html>
