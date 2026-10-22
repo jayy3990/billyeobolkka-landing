@@ -39,3 +39,18 @@ Resend 키는 웹페이지에 없고 Supabase 비밀값에만 들어가요. 표�
 
 ## 지금 제한
 - 도메인을 인증하기 전에는 Resend 가입 메일 주소 한 곳으로만 갈 수 있어요. 실제 방문자에게 보내려면 도메인 인증 후 `FROM_EMAIL`을 바꿔요.
+
+# 홈페이지 문의 메일 설치 안내 (Vercel 방식)
+
+홈페이지 맨 아래 **문의** 폼 → `api/contact.js`(Vercel 서버 함수) → Resend → 내 이메일. 받은 메일에서 바로 답장하면 문의한 사람에게 가요(reply-to).
+
+Vercel → 프로젝트 → **Settings → Environment Variables**에 추가한 뒤 **다시 배포(Redeploy)** 해요.
+
+| 이름 | 값 |
+|---|---|
+| `RESEND_API_KEY` | Resend 키 (사전신청 메일에 이미 넣었다면 그대로 써요) |
+| `CONTACT_TO_EMAIL` | 문의를 받을 내 이메일. 도메인 인증 전에는 **Resend 가입 메일 주소**만 가능해요 |
+| `CONTACT_FROM_EMAIL` | (선택) 기본값 `빌려볼까 <onboarding@resend.dev>` |
+
+- 로컬 시험: 작업 폴더 맨 위 `.env`에 같은 이름으로 넣으면 함수가 읽어요. 실행은 `vercel dev`.
+- 사전신청 페이지는 `/apply`, 홈페이지는 `/` 예요.

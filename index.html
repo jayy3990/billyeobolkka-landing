@@ -1,90 +1,154 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>빌려볼까 사전신청</title>
-<meta name="description" content="관심 분야만 고르면 AI가 읽을 책을 추천하고, 내 근처 도서관에 있는지까지 알려 줘요.">
+<title>빌려볼까</title>
+<meta name="description" content="관심 분야만 고르면 AI가 읽을 책을 추천하고, 내 근처 도서관에 있는지까지 알려 주는 도서관 이용자용 서비스, 빌려볼까.">
 <style>
-  :root { --primary:#4f46e5; --soft:#e8e7fd; --hi:#fbbf24; --text:#1d2230; --muted:#5b6275; --bg:#f6f7fb; --surface:#fff; --line:#d9dce8; }
+  :root { --primary:#4f46e5; --soft:#e8e7fd; --text:#1d2230; --muted:#5b6275; --bg:#f6f7fb; --surface:#fff; --line:#d9dce8; --on-primary:#fff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --primary:#8b87ff; --soft:#2a2c47; --text:#eceef6; --muted:#a2a8bb; --bg:#12141c; --surface:#1b1e2a; --line:#343850; --on-primary:#12141c; }
+  }
   * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:"Pretendard","Noto Sans KR","Malgun Gothic",system-ui,-apple-system,sans-serif; color:var(--text); background:var(--bg); line-height:1.6; font-size:18px; word-break:keep-all; }
-  .wrap { max-width:720px; margin:0 auto; padding:0 20px; }
-  section { padding:64px 0; }
-  header { padding:20px 0; }
-  .brand { display:flex; align-items:center; gap:12px; font-size:24px; font-weight:800; }
-  .brand svg { flex:none; width:48px; height:48px; }
-  .tag { display:inline-block; padding:6px 16px; border-radius:999px; background:var(--soft); color:var(--primary); font-weight:800; font-size:16px; }
-  h1 { font-size:clamp(36px,9vw,56px); line-height:1.2; font-weight:800; letter-spacing:-1px; margin-top:16px; }
-  h2 { font-size:clamp(28px,7vw,40px); line-height:1.25; font-weight:800; margin-top:12px; }
+  html { scroll-behavior:smooth; }
+  body { font-family:"Pretendard","Noto Sans KR","Malgun Gothic",system-ui,-apple-system,sans-serif; font-weight:400; color:var(--text); background:var(--bg); line-height:1.6; font-size:18px; word-break:keep-all; }
+  .wrap { max-width:960px; margin:0 auto; padding:0 20px; }
+  section { padding:64px 0; scroll-margin-top:72px; }
+  h1, h2, h3, b { font-weight:700; }
+  h1 { font-size:clamp(34px,8vw,56px); line-height:1.2; letter-spacing:-1px; margin-top:16px; }
+  h2 { font-size:clamp(26px,6vw,38px); line-height:1.25; margin-top:12px; }
+  h3 { font-size:20px; }
   em { font-style:normal; color:var(--primary); }
+  .tag { display:inline-block; padding:6px 16px; border-radius:999px; background:var(--soft); color:var(--primary); font-weight:700; font-size:16px; }
   p.lead { margin-top:16px; font-size:20px; color:var(--muted); }
-  .hero { padding:40px 0 64px; }
-  .btn { display:inline-block; margin-top:28px; padding:16px 28px; border-radius:14px; background:var(--primary); color:#fff; font-size:20px; font-weight:800; text-decoration:none; border:0; cursor:pointer; font-family:inherit; }
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline:3px solid var(--primary); outline-offset:2px; }
+
+  /* 상단 메뉴 */
+  .nav { position:sticky; top:0; z-index:10; background:var(--surface); border-bottom:1px solid var(--line); }
+  .nav .wrap { display:flex; align-items:center; gap:12px; min-height:64px; flex-wrap:wrap; }
+  .brand { display:flex; align-items:center; gap:10px; font-size:22px; font-weight:700; color:var(--text); text-decoration:none; margin-right:auto; }
+  .brand svg { flex:none; width:40px; height:40px; }
+  .menu { display:flex; gap:4px; list-style:none; }
+  .menu a { display:flex; align-items:center; min-height:44px; padding:0 14px; border-radius:10px; color:var(--text); text-decoration:none; font-weight:700; font-size:17px; }
+  .menu a:hover { background:var(--soft); color:var(--primary); }
+  .btn { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:10px 20px; border-radius:12px; background:var(--primary); color:var(--on-primary); font-size:17px; font-weight:700; text-decoration:none; border:0; cursor:pointer; font-family:inherit; }
   .btn:disabled { opacity:.6; cursor:wait; }
-  .btn:focus-visible, input:focus-visible { outline:3px solid var(--hi); outline-offset:2px; }
+  .btn.big { min-height:52px; padding:14px 28px; font-size:19px; margin-top:28px; }
+  .burger { display:none; min-width:44px; min-height:44px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--text); font-size:22px; cursor:pointer; }
+
+  /* 소개 */
+  .hero { padding:56px 0 64px; }
   .card { margin-top:20px; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:22px 24px; }
-  .steps { list-style:none; margin-top:20px; display:grid; gap:14px; }
-  .steps li { display:flex; gap:16px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:18px 20px; }
-  .steps .n { flex:none; width:44px; height:44px; border-radius:50%; background:var(--primary); color:#fff; font-weight:800; font-size:22px; display:flex; align-items:center; justify-content:center; }
-  .steps b { display:block; font-size:20px; }
-  .steps span { color:var(--muted); font-size:17px; }
-  .band { background:var(--primary); color:#fff; }
-  .band .tag { background:#fff; }
-  .band em { color:var(--hi); }
-  .band p.lead { color:var(--soft); }
-  label { display:block; margin-top:18px; font-weight:800; }
-  input[type=text], input[type=email] { width:100%; margin-top:6px; padding:14px 16px; font-size:18px; font-family:inherit; border:2px solid var(--line); border-radius:12px; background:#fff; color:var(--text); }
-  .check { display:flex; gap:10px; align-items:flex-start; margin-top:18px; font-weight:400; color:var(--muted); font-size:16px; }
-  .check input { flex:none; width:22px; height:22px; margin-top:3px; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px; }
+  .two .card { margin-top:0; }
+  .two h3 { color:var(--primary); margin-bottom:6px; }
+
+  /* 서비스 */
+  .cards { list-style:none; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px; }
+  .cards li { background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:22px 22px 24px; }
+  .cards .n { width:44px; height:44px; border-radius:50%; background:var(--primary); color:var(--on-primary); font-weight:700; font-size:22px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
+  .cards p { margin-top:6px; color:var(--muted); font-size:17px; }
+  .note { margin-top:16px; color:var(--muted); font-size:16px; }
+
+  /* FAQ */
+  details { margin-top:12px; background:var(--surface); border:1px solid var(--line); border-radius:16px; }
+  summary { cursor:pointer; list-style:none; padding:16px 20px; min-height:56px; font-weight:700; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  summary::-webkit-details-marker { display:none; }
+  summary::after { content:"+"; color:var(--primary); font-size:26px; line-height:1; flex:none; }
+  details[open] summary::after { content:"−"; }
+  details p { padding:0 20px 18px; color:var(--muted); }
+
+  /* 문의 */
+  label { display:block; margin-top:18px; font-weight:700; }
+  input[type=text], input[type=email], textarea { width:100%; margin-top:6px; padding:14px 16px; font-size:18px; font-family:inherit; border:2px solid var(--line); border-radius:12px; background:var(--surface); color:var(--text); }
+  textarea { min-height:160px; resize:vertical; }
   .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
   #msg { margin-top:18px; padding:14px 16px; border-radius:12px; font-weight:700; display:none; }
   #msg.ok { display:block; background:#e6f6ec; color:#14532d; }
   #msg.err { display:block; background:#fdecec; color:#7f1d1d; }
-  footer { padding:32px 0 48px; color:var(--muted); font-size:16px; }
+  .count { margin-top:4px; text-align:right; color:var(--muted); font-size:14px; }
+
+  footer { padding:32px 0 48px; color:var(--muted); font-size:16px; border-top:1px solid var(--line); }
+
+  /* 휴대폰·태블릿 */
+  @media (max-width:760px) {
+    body { font-size:17px; }
+    section { padding:48px 0; }
+    .hero { padding:36px 0 48px; }
+    .burger { display:block; }
+    .menu { display:none; flex-direction:column; width:100%; order:5; padding-bottom:12px; }
+    .menu.open { display:flex; }
+    .menu a { padding:0 12px; }
+    .nav .btn { padding:10px 14px; font-size:16px; }
+    .two, .cards { grid-template-columns:1fr; }
+    p.lead { font-size:18px; }
+  }
 </style></head>
 <body>
-<header><div class="wrap"><div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true"><rect width="128" height="128" rx="28" fill="#4f46e5"/><path d="M24 48 C40 44 53 46 61 54 L61 96 C53 89 40 87 24 91 Z" fill="#fff"/><path d="M104 48 C88 44 75 46 67 54 L67 96 C75 89 88 87 104 91 Z" fill="#fff"/><path d="M94 15 L96.8 23.2 L105 26 L96.8 28.8 L94 37 L91.2 28.8 L83 26 L91.2 23.2 Z" fill="#fbbf24"/></svg> 빌려볼까</div></div></header>
+<nav class="nav" aria-label="주 메뉴"><div class="wrap">
+  <a class="brand" href="#top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true"><rect width="128" height="128" rx="28" fill="#4f46e5"/><path d="M24 48 C40 44 53 46 61 54 L61 96 C53 89 40 87 24 91 Z" fill="#fff"/><path d="M104 48 C88 44 75 46 67 54 L67 96 C75 89 88 87 104 91 Z" fill="#fff"/><path d="M94 15 L96.8 23.2 L105 26 L96.8 28.8 L94 37 L91.2 28.8 L83 26 L91.2 23.2 Z" fill="#fbbf24"/></svg>빌려볼까</a>
+  <ul class="menu" id="menu">
+    <li><a href="#about">소개</a></li>
+    <li><a href="#service">서비스</a></li>
+    <li><a href="#team">팀</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#contact">문의</a></li>
+  </ul>
+  <a class="btn" href="https://billyeobolkka-landing.vercel.app/apply">사전신청</a>
+  <button class="burger" id="burger" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="menu">☰</button>
+</div></nav>
 
-<main>
-<section class="hero"><div class="wrap">
-  <span class="tag">사전신청 오픈</span>
+<main id="top">
+<section id="about" class="hero"><div class="wrap">
+  <span class="tag">소개</span>
   <h1>오늘 빌릴 책,<br><em>같이 골라 볼까요?</em></h1>
   <p class="lead">관심 분야만 고르면 AI가 읽을 책을 추천하고, 내 근처 도서관에 있는지까지 알려 줘요.</p>
-  <a class="btn" href="#apply">사전신청 하기</a>
+  <a class="btn big" href="https://billyeobolkka-landing.vercel.app/apply">사전신청 하기</a>
+  <div class="two">
+    <div class="card"><h3>이런 분을 위해 만들어요</h3><p>도서관에서 "뭘 빌릴지 모르겠다"고 느끼는 도서관 이용자예요.</p></div>
+    <div class="card"><h3>지금은 이렇게 해요</h3><p>인터넷에서 베스트셀러나 후기를 검색해 보고, 그 책을 도서관에서 찾아 빌려요. 고르는 데만 시간이 한참 걸려요.</p></div>
+  </div>
+  <div class="card"><h3>빌려볼까는 이렇게 달라요</h3><p>처음에 관심 분야를 설정하면 AI가 그에 맞는 책을 추천해 줘요.</p></div>
 </div></section>
 
-<section id="problem"><div class="wrap">
-  <span class="tag">문제</span>
-  <h2>도서관에 왔는데,<br><em>뭘 빌릴지</em> 모르겠다면?</h2>
-  <div class="card"><p>지금은 인터넷에서 베스트셀러나 후기를 검색해 보고, 그 책을 도서관에서 찾아 빌려요. 고르는 데만 시간이 한참 걸려요.</p></div>
-</div></section>
-
-<section id="solution"><div class="wrap">
-  <span class="tag">해결</span>
-  <h2>관심 분야만 고르면<br><em>AI가 책을 골라</em> 줘요</h2>
-  <ol class="steps">
-    <li><div class="n">1</div><div><b>관심 분야 설정 + AI 추천</b><span>좋아하는 분야를 고르면 읽을 책을 추천해요</span></div></li>
-    <li><div class="n">2</div><div><b>근처 도서관 소장 확인</b><span>추천받은 책이 가까운 도서관에 있는지 알려 줘요</span></div></li>
-    <li><div class="n">3</div><div><b>취향 프로필</b><span>읽은 책에 별점을 주면 추천이 점점 정확해져요</span></div></li>
+<section id="service"><div class="wrap">
+  <span class="tag">서비스</span>
+  <h2>핵심 기능 <em>3가지</em></h2>
+  <ol class="cards">
+    <li><div class="n">1</div><h3>관심 분야 설정 + AI 추천</h3><p>좋아하는 분야를 고르면 AI가 읽을 책을 골라 줘요.</p></li>
+    <li><div class="n">2</div><h3>근처 도서관 소장 확인</h3><p>추천받은 책이 가까운 공공도서관에 있는지, 빌릴 수 있는지 바로 보여 줘요.</p></li>
+    <li><div class="n">3</div><h3>취향 프로필</h3><p>읽은 책에 별점을 주면 AI가 취향을 배워서 다음 추천이 점점 정확해져요.</p></li>
   </ol>
+  <p class="note">독후감 쓰기·공유, 내 서재(읽은 책 기록)는 준비 중이에요.</p>
 </div></section>
 
-<section id="benefit" class="band"><div class="wrap">
-  <span class="tag">혜택</span>
-  <h2>사전신청하면<br><em>가장 먼저</em> 알려 드려요</h2>
-  <p class="lead">출시되면 가장 먼저 알려 드려요.</p>
+<section id="team"><div class="wrap">
+  <span class="tag">팀</span>
+  <h2>함께 만드는 <em>사람들</em></h2>
+  <div class="card"><p>팀 소개 준비 중이에요.</p></div>
 </div></section>
 
-<section id="apply"><div class="wrap">
-  <span class="tag">신청</span>
-  <h2>지금 <em>사전신청</em> 해요</h2>
+<section id="faq"><div class="wrap">
+  <span class="tag">FAQ</span>
+  <h2>자주 묻는 <em>질문</em></h2>
+  <details><summary>빌려볼까는 어떤 서비스인가요?</summary><p>관심 분야만 고르면 AI가 읽을 책을 추천하고, 내 근처 도서관에 있는지까지 알려 주는 서비스예요.</p></details>
+  <details><summary>누가 쓰면 좋은가요?</summary><p>도서관에서 "뭘 빌릴지 모르겠다"고 느끼는 도서관 이용자를 위해 만들고 있어요.</p></details>
+  <details><summary>언제부터 쓸 수 있나요?</summary><p>아직 준비 중이에요. 사전신청하면 출시 때 가장 먼저 알려 드려요.</p></details>
+  <details><summary>가격은 얼마인가요?</summary><p>아직 정하지 않았어요. 더 정확한 추천을 받는 프리미엄 구독을 준비하고 있어요.</p></details>
+</div></section>
+
+<section id="contact"><div class="wrap">
+  <span class="tag">문의</span>
+  <h2>궁금한 점을 <em>남겨 주세요</em></h2>
   <form id="form" class="card" novalidate>
     <label for="name">이름</label>
     <input id="name" type="text" maxlength="50" autocomplete="name" required>
     <label for="email">이메일</label>
-    <input id="email" type="email" autocomplete="email" required>
-    <label class="check"><input id="agree" type="checkbox" required><span>출시 안내를 받는 데에만 이름과 이메일을 써요. 동의해요.</span></label>
+    <input id="email" type="email" maxlength="254" autocomplete="email" required>
+    <label for="message">문의 내용</label>
+    <textarea id="message" maxlength="2000" required></textarea>
+    <div class="count"><span id="cnt">0</span> / 2000</div>
     <div class="hp" aria-hidden="true"><label for="website">웹사이트 (비워 두세요)</label><input id="website" type="text" tabindex="-1" autocomplete="off"></div>
-    <button class="btn" id="submit" type="submit">사전신청 하기</button>
+    <button class="btn big" id="submit" type="submit">문의 보내기</button>
     <div id="msg" role="status" aria-live="polite"></div>
   </form>
 </div></section>
@@ -92,34 +156,38 @@
 
 <footer><div class="wrap">빌려볼까 · 오늘 빌릴 책, 같이 골라 볼까요?</div></footer>
 
-<script src="config.js"></script>
 <script>
+  var burger = document.getElementById('burger'), menu = document.getElementById('menu');
+  burger.addEventListener('click', function () {
+    var open = menu.classList.toggle('open');
+    burger.setAttribute('aria-expanded', open); burger.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+  });
+  menu.addEventListener('click', function (e) { if (e.target.tagName === 'A') { menu.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); } });
+
   var form = document.getElementById('form'), msg = document.getElementById('msg'), btn = document.getElementById('submit');
+  var message = document.getElementById('message'), cnt = document.getElementById('cnt');
+  message.addEventListener('input', function () { cnt.textContent = message.value.length; });
   function show(kind, text) { msg.className = kind; msg.textContent = text; }
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var name = document.getElementById('name').value.trim();
     var email = document.getElementById('email').value.trim();
+    var text = message.value.trim();
     if (!name) return show('err', '이름을 적어 주세요.');
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return show('err', '이메일 모양을 확인해 주세요.');
-    if (!document.getElementById('agree').checked) return show('err', '동의에 체크해 주세요.');
+    if (!text) return show('err', '문의 내용을 적어 주세요.');
+    if (text.length > 2000) return show('err', '문의 내용은 2000자까지 쓸 수 있어요.');
     btn.disabled = true; btn.textContent = '보내는 중...'; show('', '');
-    // Supabase 저장과 별개로, Resend 안내 메일 요청을 같이 보내요 (메일이 실패해도 신청 결과에는 영향 없음)
-    fetch('/api/signup-mail', {
+    fetch('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name, email: email, website: document.getElementById('website').value })
-    }).catch(function () {});
-    fetch(window.SUPABASE_URL + '/rest/v1/signups', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY, 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ name: name, email: email })
+      body: JSON.stringify({ name: name, email: email, message: text, website: document.getElementById('website').value })
     }).then(function (r) {
-      if (r.status === 201) { form.reset(); show('ok', '신청했어요! 출시되면 가장 먼저 알려 드릴게요.'); }
-      else if (r.status === 409) show('ok', '이미 신청하셨어요. 출시되면 가장 먼저 알려 드릴게요.');
-      else show('err', '신청이 잘 안 됐어요. 잠시 뒤에 다시 해 주세요.');
+      if (r.ok) { form.reset(); cnt.textContent = '0'; show('ok', '문의가 잘 전달됐어요. 확인하고 답장드릴게요.'); }
+      else if (r.status === 400) show('err', '입력한 내용을 다시 확인해 주세요.');
+      else show('err', '문의를 보내지 못했어요. 잠시 뒤에 다시 해 주세요.');
     }).catch(function () { show('err', '인터넷 연결을 확인하고 다시 해 주세요.'); })
-      .then(function () { btn.disabled = false; btn.textContent = '사전신청 하기'; });
+      .then(function () { btn.disabled = false; btn.textContent = '문의 보내기'; });
   });
 </script>
 </body></html>
