@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8">
+<html lang="{{$lang}}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>빌려볼까</title>
-<meta name="description" content="관심 분야만 고르면 AI가 읽을 책을 추천하고, 내 근처 도서관에 있는지까지 알려 주는 도서관 이용자용 서비스, 빌려볼까.">
+{{$seo}}
+{{$fontLink}}
 <style>
   :root { --primary:#4f46e5; --soft:#e8e7fd; --text:#1d2230; --muted:#5b6275; --bg:#f6f7fb; --surface:#fff; --line:#d9dce8; --on-primary:#fff; }
   @media (prefers-color-scheme: dark) {
@@ -10,7 +10,7 @@
   }
   * { box-sizing:border-box; margin:0; padding:0; }
   html { scroll-behavior:smooth; }
-  body { font-family:"Pretendard","Noto Sans KR","Malgun Gothic",system-ui,-apple-system,sans-serif; font-weight:400; color:var(--text); background:var(--bg); line-height:1.6; font-size:18px; word-break:keep-all; }
+  body { font-family:{{$font}}; font-weight:400; color:var(--text); background:var(--bg); line-height:1.6; font-size:18px; word-break:keep-all; overflow-wrap:break-word; }
   .wrap { max-width:960px; margin:0 auto; padding:0 20px; }
   section { padding:64px 0; scroll-margin-top:72px; }
   h1, h2, h3, b { font-weight:700; }
@@ -30,9 +30,13 @@
   .menu { display:flex; gap:4px; list-style:none; }
   .menu a { display:flex; align-items:center; min-height:44px; padding:0 14px; border-radius:10px; color:var(--text); text-decoration:none; font-weight:700; font-size:17px; }
   .menu a:hover { background:var(--soft); color:var(--primary); }
-  .btn { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:10px 20px; border-radius:12px; background:var(--primary); color:var(--on-primary); font-size:17px; font-weight:700; text-decoration:none; border:0; cursor:pointer; font-family:inherit; }
+  .menu .m-cta { display:none; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:10px 20px; border-radius:12px; background:var(--primary); color:var(--on-primary); font-size:17px; font-weight:700; text-decoration:none; border:0; cursor:pointer; font-family:inherit; text-align:center; }
   .btn:disabled { opacity:.6; cursor:wait; }
   .btn.big { min-height:52px; padding:14px 28px; font-size:19px; margin-top:28px; }
+  .lang { display:inline-flex; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .lang a { display:flex; align-items:center; justify-content:center; min-width:44px; min-height:42px; padding:0 8px; color:var(--text); text-decoration:none; font-weight:700; font-size:15px; }
+  .lang a[aria-current] { background:var(--primary); color:var(--on-primary); }
   .burger { display:none; min-width:44px; min-height:44px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--text); font-size:22px; cursor:pointer; }
 
   /* 소개 */
@@ -69,100 +73,118 @@
 
   footer { padding:32px 0 48px; color:var(--muted); font-size:16px; border-top:1px solid var(--line); }
 
+  /* 메뉴가 길어지는 폭 (영어는 글자가 길어서 넉넉하게 접어요) */
+  @media (max-width:900px) {
+    .burger { display:block; }
+    .menu { display:none; flex-direction:column; width:100%; order:5; padding-bottom:12px; }
+    .menu.open { display:flex; }
+    .menu a { padding:0 12px; }
+    .menu .m-cta { display:block; margin-top:6px; }
+    .menu .m-cta a { background:var(--primary); color:var(--on-primary); justify-content:center; }
+    .nav-cta { display:none; }
+  }
   /* 휴대폰·태블릿 */
   @media (max-width:760px) {
     body { font-size:17px; }
     section { padding:48px 0; }
     .hero { padding:36px 0 48px; }
-    .burger { display:block; }
-    .menu { display:none; flex-direction:column; width:100%; order:5; padding-bottom:12px; }
-    .menu.open { display:flex; }
-    .menu a { padding:0 12px; }
-    .nav .btn { padding:10px 14px; font-size:16px; }
+    .brand { font-size:20px; gap:8px; }
+    .brand svg { width:36px; height:36px; }
     .two, .cards { grid-template-columns:1fr; }
     p.lead { font-size:18px; }
+    .btn.big { width:100%; }
   }
 </style></head>
 <body>
-<nav class="nav" aria-label="주 메뉴"><div class="wrap">
-  <a class="brand" href="#top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true"><rect width="128" height="128" rx="28" fill="#4f46e5"/><path d="M24 48 C40 44 53 46 61 54 L61 96 C53 89 40 87 24 91 Z" fill="#fff"/><path d="M104 48 C88 44 75 46 67 54 L67 96 C75 89 88 87 104 91 Z" fill="#fff"/><path d="M94 15 L96.8 23.2 L105 26 L96.8 28.8 L94 37 L91.2 28.8 L83 26 L91.2 23.2 Z" fill="#fbbf24"/></svg>빌려볼까</a>
+<nav class="nav" aria-label="{{nav.label|attr}}"><div class="wrap">
+  <a class="brand" href="#top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true"><rect width="128" height="128" rx="28" fill="#4f46e5"/><path d="M24 48 C40 44 53 46 61 54 L61 96 C53 89 40 87 24 91 Z" fill="#fff"/><path d="M104 48 C88 44 75 46 67 54 L67 96 C75 89 88 87 104 91 Z" fill="#fff"/><path d="M94 15 L96.8 23.2 L105 26 L96.8 28.8 L94 37 L91.2 28.8 L83 26 L91.2 23.2 Z" fill="#fbbf24"/></svg>{{brand}}</a>
   <ul class="menu" id="menu">
-    <li><a href="#about">소개</a></li>
-    <li><a href="#service">서비스</a></li>
-    <li><a href="#team">팀</a></li>
-    <li><a href="#faq">FAQ</a></li>
-    <li><a href="#contact">문의</a></li>
+    <li><a href="#about">{{nav.about}}</a></li>
+    <li><a href="#service">{{nav.service}}</a></li>
+    <li><a href="#team">{{nav.team}}</a></li>
+    <li><a href="#faq">{{nav.faq}}</a></li>
+    <li><a href="#contact">{{nav.contact}}</a></li>
+    <li class="m-cta"><a href="{{$apply}}">{{nav.apply}}</a></li>
   </ul>
-  <a class="btn" href="https://billyeobolkka-landing.vercel.app/apply">사전신청</a>
-  <button class="burger" id="burger" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="btn nav-cta" href="{{$apply}}">{{nav.apply}}</a>
+  <div class="lang" role="group" aria-label="{{nav.lang|attr}}" id="langs"><a href="{{$url_ko}}" lang="ko" hreflang="ko" {{$cur_ko}}>KO</a><a href="{{$url_en}}" lang="en" hreflang="en" {{$cur_en}}>EN</a></div>
+  <button class="burger" id="burger" type="button" aria-label="{{nav.open|attr}}" aria-expanded="false" aria-controls="menu">☰</button>
 </div></nav>
 
 <main id="top">
 <section id="about" class="hero"><div class="wrap">
-  <span class="tag">소개</span>
-  <h1>오늘 빌릴 책,<br><em>같이 골라 볼까요?</em></h1>
-  <p class="lead">관심 분야만 고르면 AI가 읽을 책을 추천하고, 내 근처 도서관에 있는지까지 알려 줘요.</p>
-  <a class="btn big" href="https://billyeobolkka-landing.vercel.app/apply">사전신청 하기</a>
+  <span class="tag">{{home.about.tag}}</span>
+  <h1>{{home.about.title}}</h1>
+  <p class="lead">{{lead}}</p>
+  <a class="btn big" href="{{$apply}}">{{home.about.cta}}</a>
   <div class="two">
-    <div class="card"><h3>이런 분을 위해 만들어요</h3><p>도서관에서 "뭘 빌릴지 모르겠다"고 느끼는 도서관 이용자예요.</p></div>
-    <div class="card"><h3>지금은 이렇게 해요</h3><p>인터넷에서 베스트셀러나 후기를 검색해 보고, 그 책을 도서관에서 찾아 빌려요. 고르는 데만 시간이 한참 걸려요.</p></div>
+    <div class="card"><h3>{{home.about.c1.title}}</h3><p>{{home.about.c1.body}}</p></div>
+    <div class="card"><h3>{{home.about.c2.title}}</h3><p>{{home.about.c2.body}}</p></div>
   </div>
-  <div class="card"><h3>빌려볼까는 이렇게 달라요</h3><p>처음에 관심 분야를 설정하면 AI가 그에 맞는 책을 추천해 줘요.</p></div>
+  <div class="card"><h3>{{home.about.c3.title}}</h3><p>{{home.about.c3.body}}</p></div>
 </div></section>
 
 <section id="service"><div class="wrap">
-  <span class="tag">서비스</span>
-  <h2>핵심 기능 <em>3가지</em></h2>
+  <span class="tag">{{home.service.tag}}</span>
+  <h2>{{home.service.title}}</h2>
   <ol class="cards">
-    <li><div class="n">1</div><h3>관심 분야 설정 + AI 추천</h3><p>좋아하는 분야를 고르면 AI가 읽을 책을 골라 줘요.</p></li>
-    <li><div class="n">2</div><h3>근처 도서관 소장 확인</h3><p>추천받은 책이 가까운 공공도서관에 있는지, 빌릴 수 있는지 바로 보여 줘요.</p></li>
-    <li><div class="n">3</div><h3>취향 프로필</h3><p>읽은 책에 별점을 주면 AI가 취향을 배워서 다음 추천이 점점 정확해져요.</p></li>
+    <li><div class="n">1</div><h3>{{home.service.f1.title}}</h3><p>{{home.service.f1.body}}</p></li>
+    <li><div class="n">2</div><h3>{{home.service.f2.title}}</h3><p>{{home.service.f2.body}}</p></li>
+    <li><div class="n">3</div><h3>{{home.service.f3.title}}</h3><p>{{home.service.f3.body}}</p></li>
   </ol>
-  <p class="note">독후감 쓰기·공유, 내 서재(읽은 책 기록)는 준비 중이에요.</p>
+  <p class="note">{{home.service.note}}</p>
 </div></section>
 
 <section id="team"><div class="wrap">
-  <span class="tag">팀</span>
-  <h2>함께 만드는 <em>사람들</em></h2>
-  <div class="card"><p>팀 소개 준비 중이에요.</p></div>
+  <span class="tag">{{home.team.tag}}</span>
+  <h2>{{home.team.title}}</h2>
+  <div class="card"><p>{{home.team.body}}</p></div>
 </div></section>
 
 <section id="faq"><div class="wrap">
-  <span class="tag">FAQ</span>
-  <h2>자주 묻는 <em>질문</em></h2>
-  <details><summary>빌려볼까는 어떤 서비스인가요?</summary><p>관심 분야만 고르면 AI가 읽을 책을 추천하고, 내 근처 도서관에 있는지까지 알려 주는 서비스예요.</p></details>
-  <details><summary>누가 쓰면 좋은가요?</summary><p>도서관에서 "뭘 빌릴지 모르겠다"고 느끼는 도서관 이용자를 위해 만들고 있어요.</p></details>
-  <details><summary>언제부터 쓸 수 있나요?</summary><p>아직 준비 중이에요. 사전신청하면 출시 때 가장 먼저 알려 드려요.</p></details>
-  <details><summary>가격은 얼마인가요?</summary><p>아직 정하지 않았어요. 더 정확한 추천을 받는 프리미엄 구독을 준비하고 있어요.</p></details>
+  <span class="tag">{{home.faq.tag}}</span>
+  <h2>{{home.faq.title}}</h2>
+  <details><summary>{{home.faq.q1}}</summary><p>{{home.faq.a1}}</p></details>
+  <details><summary>{{home.faq.q2}}</summary><p>{{home.faq.a2}}</p></details>
+  <details><summary>{{home.faq.q3}}</summary><p>{{home.faq.a3}}</p></details>
+  <details><summary>{{home.faq.q4}}</summary><p>{{home.faq.a4}}</p></details>
 </div></section>
 
 <section id="contact"><div class="wrap">
-  <span class="tag">문의</span>
-  <h2>궁금한 점을 <em>남겨 주세요</em></h2>
+  <span class="tag">{{home.contact.tag}}</span>
+  <h2>{{home.contact.title}}</h2>
   <form id="form" class="card" novalidate>
-    <label for="name">이름</label>
+    <label for="name">{{home.contact.name}}</label>
     <input id="name" type="text" maxlength="50" autocomplete="name" required>
-    <label for="email">이메일</label>
+    <label for="email">{{home.contact.email}}</label>
     <input id="email" type="email" maxlength="254" autocomplete="email" required>
-    <label for="message">문의 내용</label>
+    <label for="message">{{home.contact.message}}</label>
     <textarea id="message" maxlength="2000" required></textarea>
     <div class="count"><span id="cnt">0</span> / 2000</div>
-    <div class="hp" aria-hidden="true"><label for="website">웹사이트 (비워 두세요)</label><input id="website" type="text" tabindex="-1" autocomplete="off"></div>
-    <button class="btn big" id="submit" type="submit">문의 보내기</button>
+    <div class="hp" aria-hidden="true"><label for="website">{{home.contact.honeypot}}</label><input id="website" type="text" tabindex="-1" autocomplete="off"></div>
+    <button class="btn big" id="submit" type="submit">{{home.contact.send}}</button>
     <div id="msg" role="status" aria-live="polite"></div>
   </form>
 </div></section>
 </main>
 
-<footer><div class="wrap">빌려볼까 · 오늘 빌릴 책, 같이 골라 볼까요?</div></footer>
+<footer><div class="wrap">{{brand}} · {{slogan}}</div></footer>
 
 <script>
+  var T = {{home.ui|json}};
+  var LANG = {{$lang|json}};
+
+  // 언어 전환: 지금 보던 섹션(#faq 등)을 그대로 유지해서 같은 자리의 대응 페이지로 가요
+  var langLinks = document.querySelectorAll('#langs a');
+  function keepHash() { for (var i = 0; i < langLinks.length; i++) langLinks[i].href = langLinks[i].getAttribute('href').split('#')[0] + location.hash; }
+  keepHash(); window.addEventListener('hashchange', keepHash);
+
   var burger = document.getElementById('burger'), menu = document.getElementById('menu');
   burger.addEventListener('click', function () {
     var open = menu.classList.toggle('open');
-    burger.setAttribute('aria-expanded', open); burger.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+    burger.setAttribute('aria-expanded', open); burger.setAttribute('aria-label', open ? T.menuClose : T.menuOpen);
   });
-  menu.addEventListener('click', function (e) { if (e.target.tagName === 'A') { menu.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); } });
+  menu.addEventListener('click', function (e) { if (e.target.tagName === 'A') { menu.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); burger.setAttribute('aria-label', T.menuOpen); } });
 
   var form = document.getElementById('form'), msg = document.getElementById('msg'), btn = document.getElementById('submit');
   var message = document.getElementById('message'), cnt = document.getElementById('cnt');
@@ -173,21 +195,21 @@
     var name = document.getElementById('name').value.trim();
     var email = document.getElementById('email').value.trim();
     var text = message.value.trim();
-    if (!name) return show('err', '이름을 적어 주세요.');
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return show('err', '이메일 모양을 확인해 주세요.');
-    if (!text) return show('err', '문의 내용을 적어 주세요.');
-    if (text.length > 2000) return show('err', '문의 내용은 2000자까지 쓸 수 있어요.');
-    btn.disabled = true; btn.textContent = '보내는 중...'; show('', '');
+    if (!name) return show('err', T.errName);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return show('err', T.errEmail);
+    if (!text) return show('err', T.errMessage);
+    if (text.length > 2000) return show('err', T.errLong);
+    btn.disabled = true; btn.textContent = T.sending; show('', '');
     fetch('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name, email: email, message: text, website: document.getElementById('website').value })
+      body: JSON.stringify({ name: name, email: email, message: text, lang: LANG, website: document.getElementById('website').value })
     }).then(function (r) {
-      if (r.ok) { form.reset(); cnt.textContent = '0'; show('ok', '문의가 잘 전달됐어요. 확인하고 답장드릴게요.'); }
-      else if (r.status === 400) show('err', '입력한 내용을 다시 확인해 주세요.');
-      else show('err', '문의를 보내지 못했어요. 잠시 뒤에 다시 해 주세요.');
-    }).catch(function () { show('err', '인터넷 연결을 확인하고 다시 해 주세요.'); })
-      .then(function () { btn.disabled = false; btn.textContent = '문의 보내기'; });
+      if (r.ok) { form.reset(); cnt.textContent = '0'; show('ok', T.ok); }
+      else if (r.status === 400) show('err', T.errBad);
+      else show('err', T.errFail);
+    }).catch(function () { show('err', T.errNet); })
+      .then(function () { btn.disabled = false; btn.textContent = T.send; });
   });
 </script>
 </body></html>

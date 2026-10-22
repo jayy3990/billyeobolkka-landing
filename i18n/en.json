@@ -1,0 +1,119 @@
+{
+  "brand": "Billyeobolkka",
+  "slogan": "Not sure what to borrow? Let's pick your next read.",
+  "lead": "Choose your interests and AI picks books for you, then checks if your nearby library has them.",
+  "meta": {
+    "index": {
+      "title": "Billyeobolkka",
+      "description": "Pick the topics you love, and AI recommends books to read and tells you if your nearby library has them. Made for library-goers."
+    },
+    "apply": {
+      "title": "Billyeobolkka – Pre-register",
+      "description": "Choose your interests and AI picks books for you, then checks if your nearby library has them."
+    }
+  },
+  "nav": {
+    "label": "Main menu",
+    "about": "About",
+    "service": "Service",
+    "team": "Team",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "apply": "Pre-register",
+    "open": "Open menu",
+    "close": "Close menu",
+    "lang": "Choose language",
+    "home": "← Back to home"
+  },
+  "today": "People search online for bestsellers and reviews, then look for the book at the library. Just choosing takes forever.",
+  "home": {
+    "about": {
+      "tag": "About",
+      "title": "Not sure what to borrow?<br><em>Let's pick your next read.</em>",
+      "cta": "Pre-register now",
+      "c1": { "title": "Who it's for", "body": "Library-goers who stand in the aisle wondering, \"What should I borrow?\"" },
+      "c2": { "title": "How it works today", "body": "People search online for bestsellers and reviews, then look for the book at the library. Just choosing takes forever." },
+      "c3": { "title": "What's different", "body": "Set your interests once, and AI recommends books that fit." }
+    },
+    "service": {
+      "tag": "Service",
+      "title": "<em>3 key</em> features",
+      "f1": { "title": "Interests + AI picks", "body": "Choose what you like and AI selects books to read." },
+      "f2": { "title": "Check nearby libraries", "body": "See right away whether a recommended book is at a public library near you and available to borrow." },
+      "f3": { "title": "Taste profile", "body": "Rate the books you've read and AI learns your taste, so recommendations get better over time." },
+      "note": "Book reviews and sharing, and My Shelf (reading log), are coming soon."
+    },
+    "team": {
+      "tag": "Team",
+      "title": "The <em>people</em> building it",
+      "body": "Team introduction coming soon."
+    },
+    "faq": {
+      "tag": "FAQ",
+      "title": "Frequently asked <em>questions</em>",
+      "q1": "What is Billyeobolkka?",
+      "a1": "Pick your interests and AI recommends books to read, and tells you if your nearby library has them.",
+      "q2": "Who is it for?",
+      "a2": "We're building it for library-goers who aren't sure what to borrow.",
+      "q3": "When can I use it?",
+      "a3": "Not yet. Pre-register and we'll let you know first when it launches.",
+      "q4": "How much does it cost?",
+      "a4": "Not decided yet. We're preparing a premium subscription for more accurate recommendations."
+    },
+    "contact": {
+      "tag": "Contact",
+      "title": "Got a question? <em>Leave us a message</em>",
+      "name": "Name",
+      "email": "Email",
+      "message": "Message",
+      "honeypot": "Website (leave empty)",
+      "send": "Send message"
+    },
+    "ui": {
+      "sending": "Sending...",
+      "send": "Send message",
+      "errName": "Please enter your name.",
+      "errEmail": "Please check your email address.",
+      "errMessage": "Please enter your message.",
+      "errLong": "Messages can be up to 2,000 characters.",
+      "ok": "Your message was sent. We'll get back to you soon.",
+      "errBad": "Please check what you entered.",
+      "errFail": "We couldn't send your message. Please try again in a moment.",
+      "errNet": "Please check your connection and try again.",
+      "menuOpen": "Open menu",
+      "menuClose": "Close menu"
+    }
+  },
+  "apply": {
+    "hero": { "tag": "Pre-registration is open", "title": "Not sure what to borrow?<br><em>Let's pick your next read.</em>", "cta": "Pre-register now" },
+    "problem": { "tag": "The problem", "title": "At the library, but not sure <em>what to borrow</em>?" },
+    "solution": {
+      "tag": "The solution",
+      "title": "Choose your interests and<br><em>AI picks the books</em>",
+      "s1": { "title": "Interests + AI picks", "body": "Choose what you like and get book recommendations" },
+      "s2": { "title": "Check nearby libraries", "body": "Find out if a recommended book is at a library near you" },
+      "s3": { "title": "Taste profile", "body": "Rate the books you've read and recommendations get more accurate" }
+    },
+    "benefit": { "tag": "Perk", "title": "Pre-register and<br><em>hear first</em>", "lead": "We'll tell you first when we launch." },
+    "form": {
+      "tag": "Sign up",
+      "title": "<em>Pre-register</em> now",
+      "name": "Name",
+      "email": "Email",
+      "agree": "We'll use your name and email only to send you launch news. I agree.",
+      "honeypot": "Website (leave empty)",
+      "submit": "Pre-register now"
+    },
+    "ui": {
+      "sending": "Sending...",
+      "submit": "Pre-register now",
+      "errName": "Please enter your name.",
+      "errEmail": "Please check your email address.",
+      "errAgree": "Please check the box to agree.",
+      "ok": "You're in! We'll tell you first when we launch.",
+      "dup": "You've already signed up. We'll tell you first when we launch.",
+      "errFail": "Sign-up didn't go through. Please try again in a moment.",
+      "errNet": "Please check your connection and try again."
+    }
+  }
+}

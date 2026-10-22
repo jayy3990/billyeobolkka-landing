@@ -4,3 +4,7 @@ config.js
 .env
 .env.*
 !.env.example
+# build-i18n.js가 배포 때마다 다시 만들어요 (원본: src/*.template.html, i18n/*.json)
+/index.html
+/apply.html
+/en/

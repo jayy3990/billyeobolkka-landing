@@ -54,3 +54,17 @@ Vercel → 프로젝트 → **Settings → Environment Variables**에 추가한 
 
 - 로컬 시험: 작업 폴더 맨 위 `.env`에 같은 이름으로 넣으면 함수가 읽어요. 실행은 `vercel dev`.
 - 사전신청 페이지는 `/apply`, 홈페이지는 `/` 예요.
+
+# 다국어(한국어·영어) 관리 안내
+
+- 주소: 한국어 `/`, `/apply` · 영어 `/en`, `/en/apply`. 브라우저 언어를 보고 자동으로 옮기지 않고, 헤더의 **KO / EN** 버튼으로 직접 고르게 해요(보던 섹션은 그대로 유지).
+- **문구를 고칠 때**: `i18n/ko.json`, `i18n/en.json`에서 같은 이름의 항목을 고쳐요. 코드는 안 건드려도 돼요.
+  - 신청 안내 메일 문구만 `api/signup-mail.js` 맨 위 `MAIL` 안에 있어요.
+- **페이지 모양을 고칠 때**: `src/index.template.html`, `src/apply.template.html`을 고쳐요. `{{항목.이름}}` 자리가 json 문구로 바뀌어요.
+- **`index.html`, `apply.html`, `en/` 폴더는 만들어진 결과물**이라 직접 고치지 않아요(git에도 안 올라가요). 로컬에서 보려면 Node 20으로 `node build-i18n.js`를 실행해요. 배포(Vercel) 때는 `build.sh`가 자동으로 해요.
+- **새 언어 추가** (예: 일본어 `ja`):
+  1. `i18n/ko.json`을 `i18n/ja.json`으로 복사해서 번역해요. 항목이 하나라도 빠지면 빌드가 멈추고 알려 줘요.
+  2. `build-i18n.js`의 `LANGS`에 한 줄 추가해요(`code`, `dir`, `locale`, `tag`, `font`).
+  3. 템플릿의 언어 전환 버튼(`#langs`)에 링크를 추가하고, `sitemap.xml`에 주소를 더해요.
+  4. `api/signup-mail.js`의 `MAIL`에 메일 문구를 추가해요.
+- 문의 메일 제목에는 어느 언어 페이지에서 왔는지 표시돼요: `[홈페이지 문의][EN] 이름`

@@ -1,1 +1,1 @@
-{ "buildCommand": "sh build.sh", "outputDirectory": ".", "cleanUrls": true }
+{ "buildCommand": "sh build.sh", "outputDirectory": ".", "cleanUrls": true, "trailingSlash": false }

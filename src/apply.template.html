@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="{{$lang}}"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{{$seo}}
+{{$fontLink}}
+<style>
+  :root { --primary:#4f46e5; --soft:#e8e7fd; --hi:#fbbf24; --text:#1d2230; --muted:#5b6275; --bg:#f6f7fb; --surface:#fff; --line:#d9dce8; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:{{$font}}; color:var(--text); background:var(--bg); line-height:1.6; font-size:18px; word-break:keep-all; overflow-wrap:break-word; }
+  .wrap { max-width:720px; margin:0 auto; padding:0 20px; }
+  section { padding:64px 0; }
+  header { padding:20px 0; }
+  header .wrap { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .brand { display:flex; align-items:center; gap:12px; font-size:24px; font-weight:800; margin-right:auto; }
+  .brand svg { flex:none; width:48px; height:48px; }
+  .back { display:inline-flex; align-items:center; min-height:44px; color:var(--primary); font-weight:800; text-decoration:none; }
+  .lang { display:inline-flex; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--surface); }
+  .lang a { display:flex; align-items:center; justify-content:center; min-width:44px; min-height:42px; padding:0 8px; color:var(--text); text-decoration:none; font-weight:700; font-size:15px; }
+  .lang a[aria-current] { background:var(--primary); color:#fff; }
+  .tag { display:inline-block; padding:6px 16px; border-radius:999px; background:var(--soft); color:var(--primary); font-weight:800; font-size:16px; }
+  h1 { font-size:clamp(34px,9vw,56px); line-height:1.2; font-weight:800; letter-spacing:-1px; margin-top:16px; }
+  h2 { font-size:clamp(26px,7vw,40px); line-height:1.25; font-weight:800; margin-top:12px; }
+  em { font-style:normal; color:var(--primary); }
+  p.lead { margin-top:16px; font-size:20px; color:var(--muted); }
+  .hero { padding:40px 0 64px; }
+  .btn { display:inline-block; margin-top:28px; padding:16px 28px; border-radius:14px; background:var(--primary); color:#fff; font-size:20px; font-weight:800; text-decoration:none; border:0; cursor:pointer; font-family:inherit; text-align:center; }
+  .btn:disabled { opacity:.6; cursor:wait; }
+  .btn:focus-visible, input:focus-visible, a:focus-visible { outline:3px solid var(--hi); outline-offset:2px; }
+  .card { margin-top:20px; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:22px 24px; }
+  .steps { list-style:none; margin-top:20px; display:grid; gap:14px; }
+  .steps li { display:flex; gap:16px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:18px 20px; }
+  .steps .n { flex:none; width:44px; height:44px; border-radius:50%; background:var(--primary); color:#fff; font-weight:800; font-size:22px; display:flex; align-items:center; justify-content:center; }
+  .steps b { display:block; font-size:20px; }
+  .steps span { color:var(--muted); font-size:17px; }
+  .band { background:var(--primary); color:#fff; }
+  .band .tag { background:#fff; }
+  .band em { color:var(--hi); }
+  .band p.lead { color:var(--soft); }
+  label { display:block; margin-top:18px; font-weight:800; }
+  input[type=text], input[type=email] { width:100%; margin-top:6px; padding:14px 16px; font-size:18px; font-family:inherit; border:2px solid var(--line); border-radius:12px; background:#fff; color:var(--text); }
+  .check { display:flex; gap:10px; align-items:flex-start; margin-top:18px; font-weight:400; color:var(--muted); font-size:16px; }
+  .check input { flex:none; width:22px; height:22px; margin-top:3px; }
+  .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  #msg { margin-top:18px; padding:14px 16px; border-radius:12px; font-weight:700; display:none; }
+  #msg.ok { display:block; background:#e6f6ec; color:#14532d; }
+  #msg.err { display:block; background:#fdecec; color:#7f1d1d; }
+  footer { padding:32px 0 48px; color:var(--muted); font-size:16px; }
+  @media (max-width:560px) { .btn { width:100%; } }
+</style></head>
+<body>
+<header><div class="wrap">
+  <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true"><rect width="128" height="128" rx="28" fill="#4f46e5"/><path d="M24 48 C40 44 53 46 61 54 L61 96 C53 89 40 87 24 91 Z" fill="#fff"/><path d="M104 48 C88 44 75 46 67 54 L67 96 C75 89 88 87 104 91 Z" fill="#fff"/><path d="M94 15 L96.8 23.2 L105 26 L96.8 28.8 L94 37 L91.2 28.8 L83 26 L91.2 23.2 Z" fill="#fbbf24"/></svg> {{brand}}</div>
+  <div class="lang" role="group" aria-label="{{nav.lang|attr}}" id="langs"><a href="{{$url_ko}}" lang="ko" hreflang="ko" {{$cur_ko}}>KO</a><a href="{{$url_en}}" lang="en" hreflang="en" {{$cur_en}}>EN</a></div>
+  <a class="back" href="{{$home}}" style="flex-basis:100%">{{nav.home}}</a>
+</div></header>
+
+<main>
+<section class="hero"><div class="wrap">
+  <span class="tag">{{apply.hero.tag}}</span>
+  <h1>{{apply.hero.title}}</h1>
+  <p class="lead">{{lead}}</p>
+  <a class="btn" href="#apply">{{apply.hero.cta}}</a>
+</div></section>
+
+<section id="problem"><div class="wrap">
+  <span class="tag">{{apply.problem.tag}}</span>
+  <h2>{{apply.problem.title}}</h2>
+  <div class="card"><p>{{today}}</p></div>
+</div></section>
+
+<section id="solution"><div class="wrap">
+  <span class="tag">{{apply.solution.tag}}</span>
+  <h2>{{apply.solution.title}}</h2>
+  <ol class="steps">
+    <li><div class="n">1</div><div><b>{{apply.solution.s1.title}}</b><span>{{apply.solution.s1.body}}</span></div></li>
+    <li><div class="n">2</div><div><b>{{apply.solution.s2.title}}</b><span>{{apply.solution.s2.body}}</span></div></li>
+    <li><div class="n">3</div><div><b>{{apply.solution.s3.title}}</b><span>{{apply.solution.s3.body}}</span></div></li>
+  </ol>
+</div></section>
+
+<section id="benefit" class="band"><div class="wrap">
+  <span class="tag">{{apply.benefit.tag}}</span>
+  <h2>{{apply.benefit.title}}</h2>
+  <p class="lead">{{apply.benefit.lead}}</p>
+</div></section>
+
+<section id="apply"><div class="wrap">
+  <span class="tag">{{apply.form.tag}}</span>
+  <h2>{{apply.form.title}}</h2>
+  <form id="form" class="card" novalidate>
+    <label for="name">{{apply.form.name}}</label>
+    <input id="name" type="text" maxlength="50" autocomplete="name" required>
+    <label for="email">{{apply.form.email}}</label>
+    <input id="email" type="email" autocomplete="email" required>
+    <label class="check"><input id="agree" type="checkbox" required><span>{{apply.form.agree}}</span></label>
+    <div class="hp" aria-hidden="true"><label for="website">{{apply.form.honeypot}}</label><input id="website" type="text" tabindex="-1" autocomplete="off"></div>
+    <button class="btn" id="submit" type="submit">{{apply.form.submit}}</button>
+    <div id="msg" role="status" aria-live="polite"></div>
+  </form>
+</div></section>
+</main>
+
+<footer><div class="wrap">{{brand}} · {{slogan}}</div></footer>
+
+<script src="/config.js"></script>
+<script>
+  var T = {{apply.ui|json}};
+  var LANG = {{$lang|json}};
+
+  // 언어 전환: 지금 보던 자리(#apply 등)를 그대로 유지해서 대응 페이지로 가요
+  var langLinks = document.querySelectorAll('#langs a');
+  function keepHash() { for (var i = 0; i < langLinks.length; i++) langLinks[i].href = langLinks[i].getAttribute('href').split('#')[0] + location.hash; }
+  keepHash(); window.addEventListener('hashchange', keepHash);
+
+  var form = document.getElementById('form'), msg = document.getElementById('msg'), btn = document.getElementById('submit');
+  function show(kind, text) { msg.className = kind; msg.textContent = text; }
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('name').value.trim();
+    var email = document.getElementById('email').value.trim();
+    if (!name) return show('err', T.errName);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return show('err', T.errEmail);
+    if (!document.getElementById('agree').checked) return show('err', T.errAgree);
+    btn.disabled = true; btn.textContent = T.sending; show('', '');
+    // Supabase 저장과 별개로, Resend 안내 메일 요청을 같이 보내요 (메일이 실패해도 신청 결과에는 영향 없음)
+    fetch('/api/signup-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, lang: LANG, website: document.getElementById('website').value })
+    }).catch(function () {});
+    fetch(window.SUPABASE_URL + '/rest/v1/signups', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ name: name, email: email })
+    }).then(function (r) {
+      if (r.status === 201) { form.reset(); show('ok', T.ok); }
+      else if (r.status === 409) show('ok', T.dup);
+      else show('err', T.errFail);
+    }).catch(function () { show('err', T.errNet); })
+      .then(function () { btn.disabled = false; btn.textContent = T.submit; });
+  });
+</script>
+</body></html>

@@ -29,6 +29,7 @@ module.exports = async (req, res) => {
   const name = String(body.name || "").trim();
   const email = String(body.email || "").trim();
   const message = String(body.message || "").trim();
+  const lang = body.lang === "en" ? "en" : "ko"; // 어느 언어 페이지에서 왔는지 (제목에 표시)
 
   // 스팸 봇이 채우는 숨은 칸: 값이 있으면 성공인 척 하고 아무것도 안 보내요
   if (body.website) return res.status(200).json({ ok: true });
@@ -51,13 +52,14 @@ module.exports = async (req, res) => {
   <div style="background:#ffffff;border-radius:0 0 16px 16px;padding:24px 28px;line-height:1.7;font-size:16px;">
     <p style="margin:0 0 6px;"><b>이름</b> ${esc(name)}</p>
     <p style="margin:0 0 6px;"><b>이메일</b> ${esc(email)}</p>
+    <p style="margin:0 0 6px;"><b>보낸 페이지</b> ${lang === "en" ? "영어(EN)" : "한국어(KO)"}</p>
     <p style="margin:0 0 16px;"><b>보낸 시각</b> ${esc(sentAt)} (한국 시간)</p>
     <p style="margin:0 0 6px;"><b>문의 내용</b></p>
     <div style="white-space:pre-wrap;background:#f6f7fb;border-radius:12px;padding:14px 16px;">${esc(message)}</div>
   </div>
   <p style="margin:16px 4px 0;color:#5b6275;font-size:13px;">이 메일에 바로 답장하면 문의하신 분(${esc(email)})에게 갑니다.</p>
 </div></body></html>`;
-  const text = `홈페이지 문의가 왔어요\n\n이름: ${name}\n이메일: ${email}\n보낸 시각: ${sentAt} (한국 시간)\n\n문의 내용:\n${message}\n`;
+  const text = `홈페이지 문의가 왔어요\n\n이름: ${name}\n이메일: ${email}\n보낸 페이지: ${lang === "en" ? "영어(EN)" : "한국어(KO)"}\n보낸 시각: ${sentAt} (한국 시간)\n\n문의 내용:\n${message}\n`;
 
   try {
     const r = await fetch("https://api.resend.com/emails", {
@@ -67,7 +69,7 @@ module.exports = async (req, res) => {
         from,
         to: [to],
         reply_to: email,
-        subject: `[홈페이지 문의] ${name.replace(/[\r\n]+/g, " ")}`,
+        subject: `[홈페이지 문의][${lang === "en" ? "EN" : "KO"}] ${name.replace(/[\r\n]+/g, " ")}`,
         html,
         text,
       }),
