@@ -62,10 +62,19 @@
     if (text) n.textContent = text;
     return n;
   }
+  // 화면 표시용 힌트: "로그인했었는지" 여부만 브라우저에 기억해요 (토큰이 아니에요. 보호 페이지는 항상 서버가 확인해요)
+  var HINT_KEY = 'bb-auth';
+  function readHint() { try { return localStorage.getItem(HINT_KEY) === '1'; } catch (e) { return false; } }
+  function writeHint(v) { try { if (v) localStorage.setItem(HINT_KEY, '1'); else localStorage.removeItem(HINT_KEY); } catch (e) {} }
+
   function doLogout() {
+    writeHint(false);
     post('/api/auth/logout', {}).then(function () { location.href = U.home || '/'; });
   }
+  var shown = null;
   function renderSlots(loggedIn) {
+    if (shown === loggedIn) return; // 이미 같은 모습이면 다시 그리지 않아요 (깜빡임 방지)
+    shown = loggedIn;
     var slots = document.querySelectorAll('[data-auth-slot]');
     for (var i = 0; i < slots.length; i++) {
       var s = slots[i];
@@ -82,10 +91,13 @@
   }
   function initHeader() {
     if (!document.querySelector('[data-auth-slot]')) return;
-    fetch('/api/auth/me', { credentials: 'same-origin', cache: 'no-store' })
-      .then(function (r) { return r.json(); })
-      .then(function (d) { renderSlots(!!(d && d.loggedIn)); })
-      .catch(function () { renderSlots(false); });
+    renderSlots(readHint()); // 서버 응답을 기다리지 않고 마지막 상태로 먼저 그려요
+    // 페이지 맨 앞에서 미리 시작한 요청(window.__authMe)이 있으면 그 결과를 써요
+    var p = window.__authMe || fetch('/api/auth/me', { credentials: 'same-origin', cache: 'no-store' })
+      .then(function (r) { return r.json(); }).catch(function () { return null; });
+    p.then(function (d) {
+      if (d && typeof d.loggedIn === 'boolean') { writeHint(d.loggedIn); renderSlots(d.loggedIn); } // 서버가 확인한 결과로 바로잡기
+    });
   }
 
   // 언어 전환: 보던 자리(#섹션)와 ?next 같은 값을 그대로 유지해요
@@ -161,7 +173,7 @@
           if (d && d.error === 'auth') setTimeout(function () { location.href = U.login || '/login'; }, 1500);
           return;
         }
-        if (kind === 'login') { show('ok', T.loginDone); location.href = d.redirect || U.account || '/'; return; }
+        if (kind === 'login') { writeHint(true); show('ok', T.loginDone); location.href = d.redirect || U.account || '/'; return; }
         if (kind === 'signup') {
           form.reset();
           document.getElementById('signup-form-area').hidden = true;
@@ -183,10 +195,11 @@
     });
   }
 
+  initHeader(); // 헤더 버튼은 가능한 한 빨리 (DOMContentLoaded를 기다리지 않아요)
+
   document.addEventListener('DOMContentLoaded', function () {
     keepLocation();
     window.addEventListener('hashchange', keepLocation);
-    initHeader();
     var forms = document.querySelectorAll('form[data-auth-form]');
     for (var i = 0; i < forms.length; i++) initForm(forms[i]);
     var outs = document.querySelectorAll('[data-auth-logout]');

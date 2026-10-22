@@ -1,0 +1,6 @@
+<script>
+  // 로그인 상태 확인을 페이지 맨 앞에서 미리 시작해요 (결과는 /auth.js 가 받아 써요). 토큰은 다루지 않아요.
+  (function () {
+    try { window.__authMe = fetch('/api/auth/me', { credentials: 'same-origin', cache: 'no-store' }).then(function (r) { return r.json(); }).catch(function () { return null; }); } catch (e) {}
+  })();
+</script>

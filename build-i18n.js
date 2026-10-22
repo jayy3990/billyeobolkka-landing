@@ -85,7 +85,11 @@ function seo(lang, page) {
 
 // {{> 이름}} 자리를 src/partials/이름.html 내용으로 바꿔요 (공통 머리글·바닥글)
 function includePartials(tpl) {
-  return tpl.replace(/\{\{>\s*([\w-]+)\s*\}\}/g, (m, n) => fs.readFileSync(path.join(root, "src", "partials", n + ".html"), "utf8"));
+  // 조각 안에 또 조각이 있어도 펼쳐요 (최대 3단계)
+  for (let depth = 0; depth < 3 && /\{\{>/.test(tpl); depth++) {
+    tpl = tpl.replace(/\{\{>\s*([\w-]+)\s*\}\}/g, (m, n) => fs.readFileSync(path.join(root, "src", "partials", n + ".html"), "utf8"));
+  }
+  return tpl;
 }
 
 function render(tpl, lang, page) {
