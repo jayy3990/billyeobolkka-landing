@@ -58,6 +58,15 @@ module.exports = async (req, res) => {
     return res.status(400).json({ ok: false, error: "email" });
   }
 
+  // 사람인지 확인(Turnstile): TURNSTILE_SECRET_KEY를 넣어 두면 켜져요. 켜진 뒤에는 통과 못 하면 메일을 안 보내요.
+  const tsSecret = getEnv("TURNSTILE_SECRET_KEY");
+  if (tsSecret) {
+    const token = typeof body.captchaToken === "string" ? body.captchaToken : "";
+    if (!token || token.length > 2048) return res.status(400).json({ ok: false, error: "captcha" });
+    const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
+    if (!(await verifyTurnstile(tsSecret, token, ip))) return res.status(400).json({ ok: false, error: "captcha" });
+  }
+
   const key = getEnv("RESEND_API_KEY");
   if (!key) return res.status(500).json({ ok: false, error: "server" });
   const lang = body.lang === "en" ? "en" : "ko"; // 신청한 페이지 언어에 맞춰 메일 언어를 정해요
@@ -94,6 +103,20 @@ module.exports = async (req, res) => {
     return res.status(502).json({ ok: false, error: "send" });
   }
 };
+
+// Cloudflare Turnstile 토큰 검증 (서버에서만, 시크릿 키는 브라우저로 나가지 않아요). 오류가 나면 통과시키지 않아요.
+async function verifyTurnstile(secret, token, ip) {
+  try {
+    const form = new URLSearchParams({ secret, response: token });
+    if (ip) form.set("remoteip", ip);
+    const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
+    const data = await r.json();
+    return !!(data && data.success);
+  } catch (e) {
+    console.error("Turnstile 검증 오류", e && e.message);
+    return false;
+  }
+}
 
 function safeParse(s) {
   try { return JSON.parse(s); } catch (e) { return {}; }

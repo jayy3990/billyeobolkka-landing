@@ -1,0 +1,17 @@
+{{> authtop}}
+<section class="narrow"><div class="wrap">
+  <h1>{{auth.login.title}}</h1>
+  <p class="lead">{{auth.login.lead}}</p>
+  <form id="form" class="card" data-auth-form="login" novalidate>
+    <label for="email">{{auth.common.email}}</label>
+    <input id="email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required>
+    <label for="password">{{auth.common.password}}</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" maxlength="200" required>
+    <div class="captcha" data-turnstile aria-label="{{auth.common.captchaLabel|attr}}"></div>
+    <button class="btn" id="submit" type="submit">{{auth.login.submit}}</button>
+    <div id="msg" role="alert" aria-live="polite"></div>
+    <p class="hint">{{auth.login.unconfirmedHint}}</p>
+  </form>
+  <p class="links"><a href="{{$forgot}}">{{auth.login.forgot}}</a><br>{{auth.login.noAccount}} <a href="{{$signup}}">{{auth.login.signupLink}}</a></p>
+</div></section>
+{{> authbottom}}

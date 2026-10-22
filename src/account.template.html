@@ -1,0 +1,19 @@
+{{> authtop}}
+<section class="narrow"><div class="wrap">
+  <h1>{{auth.account.title}}</h1>
+  <p class="lead">{{auth.account.lead}}</p>
+  <div class="card">
+    <label>{{auth.account.emailLabel}}</label>
+    <div class="kv">[[email]]</div>
+  </div>
+  <form id="form" class="card" data-auth-form="profile" novalidate>
+    <label for="displayName">{{auth.account.nameLabel}}</label>
+    <input id="displayName" name="displayName" type="text" maxlength="40" autocomplete="nickname" value="[[displayName]]" aria-describedby="name-hint">
+    <p class="hint" id="name-hint">{{auth.account.nameHint}}</p>
+    <button class="btn" id="submit" type="submit">{{auth.account.save}}</button>
+    <div id="msg" role="status" aria-live="polite"></div>
+  </form>
+  <button class="btn ghost" type="button" data-auth-logout>{{auth.account.logout}}</button>
+  <p class="links"><a href="{{$home}}">{{auth.account.toHome}}</a></p>
+</div></section>
+{{> authbottom}}

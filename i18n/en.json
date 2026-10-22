@@ -10,6 +10,26 @@
     "apply": {
       "title": "Billyeobolkka – Pre-register",
       "description": "Choose your interests and AI picks books for you, then checks if your nearby library has them."
+    },
+    "login": {
+      "title": "Log in – Billyeobolkka",
+      "description": "Log in to Billyeobolkka."
+    },
+    "signup": {
+      "title": "Sign up – Billyeobolkka",
+      "description": "Create a Billyeobolkka account with your email and a password."
+    },
+    "forgot-password": {
+      "title": "Forgot password – Billyeobolkka",
+      "description": "Get a password reset link by email."
+    },
+    "account": {
+      "title": "My account – Billyeobolkka",
+      "description": "View your account details."
+    },
+    "reset-password": {
+      "title": "Set a new password – Billyeobolkka",
+      "description": "Choose a new password."
     }
   },
   "nav": {
@@ -31,16 +51,34 @@
       "tag": "About",
       "title": "Not sure what to borrow?<br><em>Let's pick your next read.</em>",
       "cta": "Pre-register now",
-      "c1": { "title": "Who it's for", "body": "Library-goers who stand in the aisle wondering, \"What should I borrow?\"" },
-      "c2": { "title": "How it works today", "body": "People search online for bestsellers and reviews, then look for the book at the library. Just choosing takes forever." },
-      "c3": { "title": "What's different", "body": "Set your interests once, and AI recommends books that fit." }
+      "c1": {
+        "title": "Who it's for",
+        "body": "Library-goers who stand in the aisle wondering, \"What should I borrow?\""
+      },
+      "c2": {
+        "title": "How it works today",
+        "body": "People search online for bestsellers and reviews, then look for the book at the library. Just choosing takes forever."
+      },
+      "c3": {
+        "title": "What's different",
+        "body": "Set your interests once, and AI recommends books that fit."
+      }
     },
     "service": {
       "tag": "Service",
       "title": "<em>3 key</em> features",
-      "f1": { "title": "Interests + AI picks", "body": "Choose what you like and AI selects books to read." },
-      "f2": { "title": "Check nearby libraries", "body": "See right away whether a recommended book is at a public library near you and available to borrow." },
-      "f3": { "title": "Taste profile", "body": "Rate the books you've read and AI learns your taste, so recommendations get better over time." },
+      "f1": {
+        "title": "Interests + AI picks",
+        "body": "Choose what you like and AI selects books to read."
+      },
+      "f2": {
+        "title": "Check nearby libraries",
+        "body": "See right away whether a recommended book is at a public library near you and available to borrow."
+      },
+      "f3": {
+        "title": "Taste profile",
+        "body": "Rate the books you've read and AI learns your taste, so recommendations get better over time."
+      },
       "note": "Book reviews and sharing, and My Shelf (reading log), are coming soon."
     },
     "team": {
@@ -85,16 +123,36 @@
     }
   },
   "apply": {
-    "hero": { "tag": "Pre-registration is open", "title": "Not sure what to borrow?<br><em>Let's pick your next read.</em>", "cta": "Pre-register now" },
-    "problem": { "tag": "The problem", "title": "At the library, but not sure <em>what to borrow</em>?" },
+    "hero": {
+      "tag": "Pre-registration is open",
+      "title": "Not sure what to borrow?<br><em>Let's pick your next read.</em>",
+      "cta": "Pre-register now"
+    },
+    "problem": {
+      "tag": "The problem",
+      "title": "At the library, but not sure <em>what to borrow</em>?"
+    },
     "solution": {
       "tag": "The solution",
       "title": "Choose your interests and<br><em>AI picks the books</em>",
-      "s1": { "title": "Interests + AI picks", "body": "Choose what you like and get book recommendations" },
-      "s2": { "title": "Check nearby libraries", "body": "Find out if a recommended book is at a library near you" },
-      "s3": { "title": "Taste profile", "body": "Rate the books you've read and recommendations get more accurate" }
+      "s1": {
+        "title": "Interests + AI picks",
+        "body": "Choose what you like and get book recommendations"
+      },
+      "s2": {
+        "title": "Check nearby libraries",
+        "body": "Find out if a recommended book is at a library near you"
+      },
+      "s3": {
+        "title": "Taste profile",
+        "body": "Rate the books you've read and recommendations get more accurate"
+      }
     },
-    "benefit": { "tag": "Perk", "title": "Pre-register and<br><em>hear first</em>", "lead": "We'll tell you first when we launch." },
+    "benefit": {
+      "tag": "Perk",
+      "title": "Pre-register and<br><em>hear first</em>",
+      "lead": "We'll tell you first when we launch."
+    },
     "form": {
       "tag": "Sign up",
       "title": "<em>Pre-register</em> now",
@@ -102,7 +160,8 @@
       "email": "Email",
       "agree": "We'll use your name and email only to send you launch news. I agree.",
       "honeypot": "Website (leave empty)",
-      "submit": "Pre-register now"
+      "submit": "Pre-register now",
+      "captchaLabel": "Human check"
     },
     "ui": {
       "sending": "Sending...",
@@ -111,9 +170,89 @@
       "errEmail": "Please check your email address.",
       "errAgree": "Please check the box to agree.",
       "ok": "You're in! We'll tell you first when we launch.",
-      "dup": "You've already signed up. We'll tell you first when we launch.",
       "errFail": "Sign-up didn't go through. Please try again in a moment.",
-      "errNet": "Please check your connection and try again."
+      "errNet": "Please check your connection and try again.",
+      "errCaptcha": "Please complete the human check."
+    }
+  },
+  "auth": {
+    "header": {
+      "login": "Log in",
+      "signup": "Sign up",
+      "account": "My account",
+      "logout": "Log out",
+      "home": "← Back to home"
+    },
+    "common": {
+      "email": "Email",
+      "password": "Password",
+      "passwordConfirm": "Confirm password",
+      "passwordHint": "At least 8 characters, with letters and numbers.",
+      "captchaLabel": "Human check"
+    },
+    "login": {
+      "title": "Log in",
+      "lead": "Log in with your email and password.",
+      "submit": "Log in",
+      "forgot": "Forgot your password?",
+      "noAccount": "Don't have an account yet?",
+      "signupLink": "Sign up",
+      "unconfirmedHint": "If you just signed up, click the link in the verification email first."
+    },
+    "signup": {
+      "title": "Sign up",
+      "lead": "Sign up with your email and a password. We'll send a verification email.",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Log in",
+      "doneTitle": "Check your email",
+      "doneBody": "We've sent a verification email to the address you entered. Click the link inside to finish signing up.",
+      "doneNote": "Can't find it? Check your spam folder. If you already have an account, log in or reset your password instead."
+    },
+    "forgot": {
+      "title": "Forgot password",
+      "lead": "Enter the email you signed up with and we'll send you a reset link.",
+      "submit": "Send reset email",
+      "back": "Back to log in"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "lead": "Enter your new password.",
+      "password": "New password",
+      "passwordConfirm": "Confirm new password",
+      "submit": "Change password"
+    },
+    "account": {
+      "title": "My account",
+      "lead": "Only logged-in users can see this page.",
+      "emailLabel": "Email",
+      "nameLabel": "Display name",
+      "nameHint": "Up to 40 characters. You can leave it empty.",
+      "save": "Save",
+      "logout": "Log out",
+      "toHome": "Home"
+    },
+    "ui": {
+      "sending": "Working...",
+      "loginDone": "Logged in. Redirecting...",
+      "forgotDone": "If that email has an account, we've sent a reset email. Please check your inbox (and spam folder).",
+      "resetDone": "Your password was changed. Redirecting...",
+      "saved": "Saved.",
+      "errors": {
+        "email": "Please check your email address.",
+        "weak": "Your password needs at least 8 characters, with both letters and numbers.",
+        "mismatch": "The passwords don't match.",
+        "captcha": "Please complete the human check.",
+        "credentials": "The email or password is incorrect.",
+        "rate": "Too many requests. Please try again in a moment.",
+        "same": "Please choose a password different from the previous one.",
+        "auth": "Please log in to continue.",
+        "forbidden": "This page can only be used from the reset link in your email.",
+        "name": "Display names can be up to 40 characters.",
+        "link": "This link has expired or is invalid. Please try again.",
+        "net": "Please check your connection and try again.",
+        "generic": "Something went wrong. Please try again in a moment."
+      }
     }
   }
 }

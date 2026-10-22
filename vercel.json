@@ -1,1 +1,38 @@
-{ "buildCommand": "sh build.sh", "outputDirectory": ".", "cleanUrls": true, "trailingSlash": false }
+{
+  "buildCommand": "sh build.sh",
+  "outputDirectory": ".",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "functions": {
+    "api/page.js": { "includeFiles": "api/_pages/**" }
+  },
+  "rewrites": [
+    { "source": "/account", "destination": "/api/page?name=account&lang=ko" },
+    { "source": "/en/account", "destination": "/api/page?name=account&lang=en" },
+    { "source": "/reset-password", "destination": "/api/page?name=reset-password&lang=ko" },
+    { "source": "/en/reset-password", "destination": "/api/page?name=reset-password&lang=en" },
+    { "source": "/auth/confirm", "destination": "/api/auth/confirm" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" }
+      ]
+    },
+    {
+      "source": "/(account|en/account|reset-password|en/reset-password|auth/confirm|login|en/login|signup|en/signup|forgot-password|en/forgot-password)",
+      "headers": [{ "key": "Cache-Control", "value": "private, no-store" }]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    }
+  ]
+}

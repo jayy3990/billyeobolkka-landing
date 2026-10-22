@@ -1,0 +1,16 @@
+{
+  "name": "billyeobolkka-landing",
+  "private": true,
+  "description": "빌려볼까 홈페이지·사전신청·회원 인증",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "build": "sh build.sh",
+    "test": "node --test tests/"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.118.0"
+  }
+}

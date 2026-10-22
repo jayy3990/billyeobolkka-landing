@@ -8,3 +8,10 @@ config.js
 /index.html
 /apply.html
 /en/
+
+# 설치된 패키지
+node_modules/
+/login.html
+/signup.html
+/forgot-password.html
+/api/_pages/

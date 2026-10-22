@@ -1,0 +1,11 @@
+</main>
+<footer><div class="wrap">{{brand}} · {{slogan}}</div></footer>
+<script src="/config.js"></script>
+<script>
+  window.AUTH_LANG = {{$lang|json}};
+  window.AUTH_T = {{auth.ui|json}};
+  window.AUTH_H = {{auth.header|json}};
+  window.AUTH_URLS = { home: {{$home|json}}, login: {{$login|json}}, signup: {{$signup|json}}, account: {{$account|json}} };
+</script>
+<script src="/auth.js"></script>
+</body></html>

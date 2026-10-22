@@ -1,0 +1,27 @@
+{{> authtop}}
+<section class="narrow"><div class="wrap">
+  <div id="signup-form-area">
+    <h1>{{auth.signup.title}}</h1>
+    <p class="lead">{{auth.signup.lead}}</p>
+    <form id="form" class="card" data-auth-form="signup" novalidate>
+      <label for="email">{{auth.common.email}}</label>
+      <input id="email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required>
+      <label for="password">{{auth.common.password}}</label>
+      <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required aria-describedby="pw-hint">
+      <p class="hint" id="pw-hint">{{auth.common.passwordHint}}</p>
+      <label for="passwordConfirm">{{auth.common.passwordConfirm}}</label>
+      <input id="passwordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" maxlength="72" required>
+      <div class="captcha" data-turnstile aria-label="{{auth.common.captchaLabel|attr}}"></div>
+      <button class="btn" id="submit" type="submit">{{auth.signup.submit}}</button>
+      <div id="msg" role="alert" aria-live="polite"></div>
+    </form>
+    <p class="links">{{auth.signup.haveAccount}} <a href="{{$login}}">{{auth.signup.loginLink}}</a></p>
+  </div>
+  <div id="signup-done" class="card done" hidden role="status" aria-live="polite">
+    <h2>{{auth.signup.doneTitle}}</h2>
+    <p>{{auth.signup.doneBody}}</p>
+    <p class="hint">{{auth.signup.doneNote}}</p>
+    <a class="btn ghost" href="{{$login}}">{{auth.signup.loginLink}}</a>
+  </div>
+</div></section>
+{{> authbottom}}

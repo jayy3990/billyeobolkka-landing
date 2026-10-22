@@ -20,10 +20,17 @@ const LANGS = [
     fontLink: '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">',
   },
 ];
+// noindex: 검색에 안 잡히게 / dynamic: 로그인해야 볼 수 있어서 api/_pages/ 에 만들고 api/page.js가 서버에서 내보내요
 const PAGES = [
   { name: "index", path: "" },
   { name: "apply", path: "apply" },
+  { name: "login", path: "login", noindex: true },
+  { name: "signup", path: "signup", noindex: true },
+  { name: "forgot-password", path: "forgot-password", noindex: true },
+  { name: "account", path: "account", noindex: true, dynamic: true },
+  { name: "reset-password", path: "reset-password", noindex: true, dynamic: true },
 ];
+const pageByName = (n) => PAGES.find((p) => p.name === n);
 
 const root = __dirname;
 const attr = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -63,6 +70,7 @@ function seo(lang, page) {
   return [
     `<title>${attr(t.title)}</title>`,
     `<meta name="description" content="${attr(t.description)}">`,
+    ...(page.noindex ? [`<meta name="robots" content="noindex,nofollow">`] : []),
     `<link rel="canonical" href="${self}">`,
     ...alts,
     `<meta property="og:type" content="website">`,
@@ -75,7 +83,13 @@ function seo(lang, page) {
   ].join("\n");
 }
 
+// {{> 이름}} 자리를 src/partials/이름.html 내용으로 바꿔요 (공통 머리글·바닥글)
+function includePartials(tpl) {
+  return tpl.replace(/\{\{>\s*([\w-]+)\s*\}\}/g, (m, n) => fs.readFileSync(path.join(root, "src", "partials", n + ".html"), "utf8"));
+}
+
 function render(tpl, lang, page) {
+  tpl = includePartials(tpl);
   const d = dict[lang.code];
   const vars = {
     lang: lang.code,
@@ -86,6 +100,10 @@ function render(tpl, lang, page) {
     apply: SITE + pageUrl(lang, PAGES[1]),
     url_ko: pageUrl(LANGS[0], page),
     url_en: pageUrl(LANGS[1], page),
+    login: pageUrl(lang, pageByName("login")),
+    signup: pageUrl(lang, pageByName("signup")),
+    forgot: pageUrl(lang, pageByName("forgot-password")),
+    account: pageUrl(lang, pageByName("account")),
     cur_ko: lang.code === "ko" ? 'aria-current="true"' : "",
     cur_en: lang.code === "en" ? 'aria-current="true"' : "",
   };
@@ -101,9 +119,10 @@ function render(tpl, lang, page) {
 for (const lang of LANGS) {
   for (const page of PAGES) {
     const tpl = fs.readFileSync(path.join(root, "src", page.name + ".template.html"), "utf8");
-    const outDir = path.join(root, lang.dir);
+    // 로그인해야 볼 수 있는 페이지는 공개 폴더가 아니라 api/_pages/ 에 만들어요
+    const outDir = page.dynamic ? path.join(root, "api", "_pages") : path.join(root, lang.dir);
     fs.mkdirSync(outDir, { recursive: true });
-    const out = path.join(outDir, page.name + ".html");
+    const out = path.join(outDir, page.dynamic ? `${page.name}.${lang.code}.html` : page.name + ".html");
     fs.writeFileSync(out, render(tpl, lang, page));
     console.log("만들었어요:", path.relative(root, out));
   }

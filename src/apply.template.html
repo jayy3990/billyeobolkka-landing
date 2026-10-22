@@ -13,6 +13,9 @@
   header .wrap { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
   .brand { display:flex; align-items:center; gap:12px; font-size:24px; font-weight:800; margin-right:auto; }
   .brand svg { flex:none; width:48px; height:48px; }
+  .auth-slot { display:inline-flex; align-items:center; gap:8px; }
+  .auth-slot a, .auth-slot button { display:inline-flex; align-items:center; min-height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font:inherit; font-size:16px; font-weight:700; text-decoration:none; cursor:pointer; }
+  .captcha { margin-top:18px; }
   .back { display:inline-flex; align-items:center; min-height:44px; color:var(--primary); font-weight:800; text-decoration:none; }
   .lang { display:inline-flex; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--surface); }
   .lang a { display:flex; align-items:center; justify-content:center; min-width:44px; min-height:42px; padding:0 8px; color:var(--text); text-decoration:none; font-weight:700; font-size:15px; }
@@ -50,6 +53,7 @@
 <body>
 <header><div class="wrap">
   <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true"><rect width="128" height="128" rx="28" fill="#4f46e5"/><path d="M24 48 C40 44 53 46 61 54 L61 96 C53 89 40 87 24 91 Z" fill="#fff"/><path d="M104 48 C88 44 75 46 67 54 L67 96 C75 89 88 87 104 91 Z" fill="#fff"/><path d="M94 15 L96.8 23.2 L105 26 L96.8 28.8 L94 37 L91.2 28.8 L83 26 L91.2 23.2 Z" fill="#fbbf24"/></svg> {{brand}}</div>
+  <span class="auth-slot" data-auth-slot></span>
   <div class="lang" role="group" aria-label="{{nav.lang|attr}}" id="langs"><a href="{{$url_ko}}" lang="ko" hreflang="ko" {{$cur_ko}}>KO</a><a href="{{$url_en}}" lang="en" hreflang="en" {{$cur_en}}>EN</a></div>
   <a class="back" href="{{$home}}" style="flex-basis:100%">{{nav.home}}</a>
 </div></header>
@@ -94,6 +98,7 @@
     <input id="email" type="email" autocomplete="email" required>
     <label class="check"><input id="agree" type="checkbox" required><span>{{apply.form.agree}}</span></label>
     <div class="hp" aria-hidden="true"><label for="website">{{apply.form.honeypot}}</label><input id="website" type="text" tabindex="-1" autocomplete="off"></div>
+    <div class="captcha" id="ts" aria-label="{{apply.form.captchaLabel|attr}}"></div>
     <button class="btn" id="submit" type="submit">{{apply.form.submit}}</button>
     <div id="msg" role="status" aria-live="polite"></div>
   </form>
@@ -107,10 +112,10 @@
   var T = {{apply.ui|json}};
   var LANG = {{$lang|json}};
 
-  // 언어 전환: 지금 보던 자리(#apply 등)를 그대로 유지해서 대응 페이지로 가요
-  var langLinks = document.querySelectorAll('#langs a');
-  function keepHash() { for (var i = 0; i < langLinks.length; i++) langLinks[i].href = langLinks[i].getAttribute('href').split('#')[0] + location.hash; }
-  keepHash(); window.addEventListener('hashchange', keepHash);
+  // 헤더 로그인 버튼, 언어 전환 주소 유지, Turnstile 위젯은 /auth.js 가 맡아요
+  window.AUTH_LANG = LANG;
+  window.AUTH_H = {{auth.header|json}};
+  window.AUTH_URLS = { home: {{$home|json}}, login: {{$login|json}}, signup: {{$signup|json}}, account: {{$account|json}} };
 
   var form = document.getElementById('form'), msg = document.getElementById('msg'), btn = document.getElementById('submit');
   function show(kind, text) { msg.className = kind; msg.textContent = text; }
@@ -121,12 +126,17 @@
     if (!name) return show('err', T.errName);
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return show('err', T.errEmail);
     if (!document.getElementById('agree').checked) return show('err', T.errAgree);
+    var captchaToken = '';
+    if (window.BBTurnstile && window.BBTurnstile.enabled()) {
+      captchaToken = window.BBTurnstile.token();
+      if (!captchaToken) return show('err', T.errCaptcha);
+    }
     btn.disabled = true; btn.textContent = T.sending; show('', '');
     // Supabase 저장과 별개로, Resend 안내 메일 요청을 같이 보내요 (메일이 실패해도 신청 결과에는 영향 없음)
     fetch('/api/signup-mail', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name, email: email, lang: LANG, website: document.getElementById('website').value })
+      body: JSON.stringify({ name: name, email: email, lang: LANG, captchaToken: captchaToken, website: document.getElementById('website').value })
     }).catch(function () {});
     fetch(window.SUPABASE_URL + '/rest/v1/signups', {
       method: 'POST',
@@ -134,10 +144,13 @@
       body: JSON.stringify({ name: name, email: email })
     }).then(function (r) {
       if (r.status === 201) { form.reset(); show('ok', T.ok); }
-      else if (r.status === 409) show('ok', T.dup);
+      else if (r.status === 409) show('ok', T.ok); // 이미 신청한 주소여도 같은 메시지 (신청 여부를 알려 주지 않아요)
       else show('err', T.errFail);
     }).catch(function () { show('err', T.errNet); })
-      .then(function () { btn.disabled = false; btn.textContent = T.submit; });
+      .then(function () { btn.disabled = false; btn.textContent = T.submit; if (window.BBTurnstile) window.BBTurnstile.reset(); });
   });
+  // auth.js 가 다 불러와진 뒤에 Turnstile 위젯을 붙여요
+  document.addEventListener('DOMContentLoaded', function () { if (window.BBTurnstile) window.BBTurnstile.mount(document.getElementById('ts')); });
 </script>
+<script src="/auth.js"></script>
 </body></html>

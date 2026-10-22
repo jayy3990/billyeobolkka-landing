@@ -24,11 +24,11 @@
 
   /* 상단 메뉴 */
   .nav { position:sticky; top:0; z-index:10; background:var(--surface); border-bottom:1px solid var(--line); }
-  .nav .wrap { display:flex; align-items:center; gap:12px; min-height:64px; flex-wrap:wrap; }
+  .nav .wrap { max-width:1120px; display:flex; align-items:center; gap:10px; min-height:64px; flex-wrap:wrap; }
   .brand { display:flex; align-items:center; gap:10px; font-size:22px; font-weight:700; color:var(--text); text-decoration:none; margin-right:auto; }
   .brand svg { flex:none; width:40px; height:40px; }
   .menu { display:flex; gap:4px; list-style:none; }
-  .menu a { display:flex; align-items:center; min-height:44px; padding:0 14px; border-radius:10px; color:var(--text); text-decoration:none; font-weight:700; font-size:17px; }
+  .menu a { display:flex; align-items:center; min-height:44px; padding:0 11px; border-radius:10px; color:var(--text); text-decoration:none; font-weight:700; font-size:17px; }
   .menu a:hover { background:var(--soft); color:var(--primary); }
   .menu .m-cta { display:none; }
   .btn { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:10px 20px; border-radius:12px; background:var(--primary); color:var(--on-primary); font-size:17px; font-weight:700; text-decoration:none; border:0; cursor:pointer; font-family:inherit; text-align:center; }
@@ -37,6 +37,10 @@
   .lang { display:inline-flex; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
   .lang a { display:flex; align-items:center; justify-content:center; min-width:44px; min-height:42px; padding:0 8px; color:var(--text); text-decoration:none; font-weight:700; font-size:15px; }
   .lang a[aria-current] { background:var(--primary); color:var(--on-primary); }
+  .auth-slot { display:inline-flex; align-items:center; gap:8px; }
+  .auth-slot a, .auth-slot button { display:inline-flex; align-items:center; min-height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font:inherit; font-size:16px; font-weight:700; text-decoration:none; cursor:pointer; }
+  .auth-slot a:hover, .auth-slot button:hover { background:var(--soft); color:var(--primary); }
+  .menu .m-auth { display:none; }
   .burger { display:none; min-width:44px; min-height:44px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--text); font-size:22px; cursor:pointer; }
 
   /* 소개 */
@@ -74,14 +78,17 @@
   footer { padding:32px 0 48px; color:var(--muted); font-size:16px; border-top:1px solid var(--line); }
 
   /* 메뉴가 길어지는 폭 (영어는 글자가 길어서 넉넉하게 접어요) */
-  @media (max-width:900px) {
+  @media (max-width:1020px) {
     .burger { display:block; }
     .menu { display:none; flex-direction:column; width:100%; order:5; padding-bottom:12px; }
     .menu.open { display:flex; }
     .menu a { padding:0 12px; }
     .menu .m-cta { display:block; margin-top:6px; }
     .menu .m-cta a { background:var(--primary); color:var(--on-primary); justify-content:center; }
-    .nav-cta { display:none; }
+    .nav-cta, .nav-auth { display:none; }
+    .menu .m-auth { display:block; margin-top:6px; }
+    .menu .m-auth .auth-slot { display:flex; flex-direction:column; align-items:stretch; width:100%; }
+    .menu .m-auth .auth-slot a, .menu .m-auth .auth-slot button { justify-content:center; width:100%; }
   }
   /* 휴대폰·태블릿 */
   @media (max-width:760px) {
@@ -105,8 +112,10 @@
     <li><a href="#faq">{{nav.faq}}</a></li>
     <li><a href="#contact">{{nav.contact}}</a></li>
     <li class="m-cta"><a href="{{$apply}}">{{nav.apply}}</a></li>
+    <li class="m-auth"><span class="auth-slot" data-auth-slot></span></li>
   </ul>
   <a class="btn nav-cta" href="{{$apply}}">{{nav.apply}}</a>
+  <span class="auth-slot nav-auth" data-auth-slot></span>
   <div class="lang" role="group" aria-label="{{nav.lang|attr}}" id="langs"><a href="{{$url_ko}}" lang="ko" hreflang="ko" {{$cur_ko}}>KO</a><a href="{{$url_en}}" lang="en" hreflang="en" {{$cur_en}}>EN</a></div>
   <button class="burger" id="burger" type="button" aria-label="{{nav.open|attr}}" aria-expanded="false" aria-controls="menu">☰</button>
 </div></nav>
@@ -174,10 +183,10 @@
   var T = {{home.ui|json}};
   var LANG = {{$lang|json}};
 
-  // 언어 전환: 지금 보던 섹션(#faq 등)을 그대로 유지해서 같은 자리의 대응 페이지로 가요
-  var langLinks = document.querySelectorAll('#langs a');
-  function keepHash() { for (var i = 0; i < langLinks.length; i++) langLinks[i].href = langLinks[i].getAttribute('href').split('#')[0] + location.hash; }
-  keepHash(); window.addEventListener('hashchange', keepHash);
+  // 헤더의 로그인/로그아웃 버튼과 언어 전환 때 보던 섹션 유지는 /auth.js 가 맡아요
+  window.AUTH_LANG = LANG;
+  window.AUTH_H = {{auth.header|json}};
+  window.AUTH_URLS = { home: {{$home|json}}, login: {{$login|json}}, signup: {{$signup|json}}, account: {{$account|json}} };
 
   var burger = document.getElementById('burger'), menu = document.getElementById('menu');
   burger.addEventListener('click', function () {
@@ -212,4 +221,5 @@
       .then(function () { btn.disabled = false; btn.textContent = T.send; });
   });
 </script>
+<script src="/auth.js"></script>
 </body></html>
