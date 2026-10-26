@@ -1,5 +1,5 @@
 // 비밀번호 재설정: 메일 링크(recovery)로 들어와 세션과 표시 쿠키가 있는 사람만 새 비밀번호를 정할 수 있어요.
-const A = require("../_lib/auth");
+const A = require("../auth");
 
 module.exports = async (req, res) => {
   if (!A.sameOriginPost(req, res)) return;

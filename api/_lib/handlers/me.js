@@ -1,5 +1,5 @@
 // 헤더의 로그인/로그아웃 버튼을 위한 상태 확인. 서버(Supabase)가 검증한 결과만 돌려줘요.
-const A = require("../_lib/auth");
+const A = require("../auth");
 
 module.exports = async (req, res) => {
   if (req.method !== "GET") return A.fail(res, 405, "method");

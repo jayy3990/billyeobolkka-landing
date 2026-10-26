@@ -1,5 +1,5 @@
 // 회원가입: 이메일+비밀번호 → 인증 메일 발송. 가입 여부와 상관없이 같은 성공 응답을 줘요.
-const A = require("../_lib/auth");
+const A = require("../auth");
 
 module.exports = async (req, res) => {
   if (!A.sameOriginPost(req, res)) return;

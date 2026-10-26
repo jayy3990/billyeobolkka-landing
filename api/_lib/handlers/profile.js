@@ -1,5 +1,5 @@
 // 내 프로필(표시 이름) 저장. 사용자 본인 권한(RLS)으로만 자기 행을 고쳐요.
-const A = require("../_lib/auth");
+const A = require("../auth");
 
 module.exports = async (req, res) => {
   if (!A.sameOriginPost(req, res)) return;

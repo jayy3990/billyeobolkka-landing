@@ -10,13 +10,13 @@ process.env.SUPABASE_URL = "https://x.supabase.co";
 process.env.SUPABASE_ANON_KEY = "sb_publishable_dummy";
 
 const A = require("../api/_lib/auth");
-const login = require("../api/auth/login");
-const signup = require("../api/auth/signup");
-const forgot = require("../api/auth/forgot");
-const logout = require("../api/auth/logout");
-const confirm = require("../api/auth/confirm");
-const update = require("../api/auth/update-password");
-const me = require("../api/auth/me");
+const login = require("../api/_lib/handlers/login");
+const signup = require("../api/_lib/handlers/signup");
+const forgot = require("../api/_lib/handlers/forgot");
+const logout = require("../api/_lib/handlers/logout");
+const confirm = require("../api/_lib/handlers/confirm");
+const update = require("../api/_lib/handlers/update-password");
+const me = require("../api/_lib/handlers/me");
 const page = require("../api/page");
 
 const realCreateSupabase = A.deps.createSupabase; // 실제 @supabase/ssr 코드 (아래 마지막 시험에서 써요)
@@ -360,4 +360,21 @@ test("signup-mail: TURNSTILE_SECRET_KEY가 있으면 토큰 검증을 통과해�
     global.fetch = realFetch;
     delete process.env.TURNSTILE_SECRET_KEY;
   }
+});
+
+// ── 인증 함수 묶음(api/auth/[action].js) ──
+test("api/auth/[action]: 허용된 동작만 해당 처리기로 보내고, 모르는 동작은 404", async () => {
+  const dispatch = require("../api/auth/[action]");
+  const mkRes = () => { const r = { code: 200, headers: {}, body: undefined, setHeader(k, v) { r.headers[k.toLowerCase()] = v; }, getHeader(k) { return r.headers[k.toLowerCase()]; }, status(c) { r.code = c; return r; }, send(b) { r.body = b; return r; }, end(b) { r.body = b; return r; } }; return r; };
+  fake();
+  for (const bad of ["", "nope", "../signup", "__proto__", "constructor", "toString", undefined, ["login"]]) {
+    const res = mkRes(); dispatch({ method: "POST", query: { action: bad }, headers: {} }, res);
+    assert.equal(res.code, 404, String(bad));
+  }
+  // 로그인 처리기로 연결되는지: 다른 사이트 Origin 이면 403 (처리기의 CSRF 검사까지 도달)
+  let res = mkRes(); await dispatch({ method: "POST", query: { action: "login" }, headers: { "content-type": "application/json", origin: "https://evil.test" }, body: {} }, res);
+  assert.equal(res.code, 403);
+  // me 는 쿠키 없이 GET 하면 로그아웃 상태
+  res = mkRes(); await dispatch({ method: "GET", query: { action: "me" }, headers: {} }, res);
+  assert.deepEqual(JSON.parse(res.body), { ok: true, loggedIn: false });
 });

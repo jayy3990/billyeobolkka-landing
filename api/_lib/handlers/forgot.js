@@ -1,5 +1,5 @@
 // 비밀번호 찾기: 가입 여부와 상관없이 항상 같은 성공 응답 ("가입된 이메일이라면 보냈어요").
-const A = require("../_lib/auth");
+const A = require("../auth");
 
 module.exports = async (req, res) => {
   if (!A.sameOriginPost(req, res)) return;

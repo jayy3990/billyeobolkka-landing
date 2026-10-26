@@ -1,6 +1,6 @@
 // 메일 링크 처리: /auth/confirm?token_hash=...&type=email|recovery&next=...
 // token_hash를 서버에서 verifyOtp로 교환하고(PKCE 방식), 세션 쿠키를 심은 뒤 안전한 주소로 이동해요.
-const A = require("../_lib/auth");
+const A = require("../auth");
 
 const TYPES = ["email", "signup", "recovery"];
 

@@ -1,5 +1,5 @@
 // 로그아웃: 이 기기의 세션을 끝내고 쿠키를 지워요.
-const A = require("../_lib/auth");
+const A = require("../auth");
 
 module.exports = async (req, res) => {
   if (!A.sameOriginPost(req, res)) return;

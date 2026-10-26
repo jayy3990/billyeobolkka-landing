@@ -1,6 +1,6 @@
 // 로그인: 성공하면 세션을 httpOnly 쿠키에 심고, 안전하게 검사한 이동 주소를 돌려줘요.
 // 실패는 어느 쪽이 틀렸는지 알려 주지 않고 항상 같은 코드("credentials")예요.
-const A = require("../_lib/auth");
+const A = require("../auth");
 
 module.exports = async (req, res) => {
   if (!A.sameOriginPost(req, res)) return;
