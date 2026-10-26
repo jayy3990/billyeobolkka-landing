@@ -30,6 +30,10 @@
     "reset-password": {
       "title": "Set a new password – Billyeobolkka",
       "description": "Choose a new password."
+    },
+    "recommend": {
+      "title": "AI book picks – Billyeobolkka",
+      "description": "AI picks books you'll like from what your chosen library actually has on its shelves."
     }
   },
   "nav": {
@@ -62,7 +66,8 @@
       "c3": {
         "title": "What's different",
         "body": "Set your interests once, and AI recommends books that fit."
-      }
+      },
+      "ctaRecommend": "Get recommendations"
     },
     "service": {
       "tag": "Service",
@@ -253,6 +258,102 @@
         "net": "Please check your connection and try again.",
         "generic": "Something went wrong. Please try again in a moment."
       }
+    }
+  },
+  "rec": {
+    "title": "AI book picks",
+    "lead": "We pick books you'll enjoy from what your chosen library actually holds.",
+    "remaining": "{n}/{max} picks left today",
+    "stepsLabel": "Progress",
+    "steps": {
+      "region": "Library",
+      "taste": "Taste",
+      "result": "Picks"
+    },
+    "region": {
+      "title": "Which library will you borrow from?",
+      "sido": "Province / city",
+      "gu": "District",
+      "choose": "Select",
+      "libs": "Libraries",
+      "books": "{n} books",
+      "none": "No participating libraries in this area",
+      "pickGu": "Choose a district to see its libraries",
+      "next": "Next: your taste",
+      "selected": "Selected library",
+      "loadFail": "Couldn't load the library list. Please refresh."
+    },
+    "taste": {
+      "title": "What kind of books do you like?",
+      "age": "Age group",
+      "gender": "Gender",
+      "genres": "Favorite genres (1–3)",
+      "genresMax": "You can pick up to 3 genres",
+      "liked": "Books you enjoyed (optional, up to 3)",
+      "likedHint": "Search by title and pick from the list. This helps us match your taste better.",
+      "search": "Book title",
+      "searchBtn": "Search",
+      "searching": "Searching...",
+      "noResults": "No results",
+      "add": "Add",
+      "remove": "Remove",
+      "added": "Added",
+      "likedMax": "You can pick up to 3 books",
+      "back": "← Change library",
+      "submit": "Get recommendations"
+    },
+    "age": {
+      "any": "Prefer not to say",
+      "teen": "Late teens",
+      "20s": "20s",
+      "30s": "30s",
+      "40s": "40s",
+      "50s": "50s",
+      "60s": "60 and over"
+    },
+    "gender": {
+      "any": "Prefer not to say",
+      "male": "Male",
+      "female": "Female"
+    },
+    "genre": {
+      "novel": "Novels",
+      "poetry": "Poetry",
+      "essay": "Essays",
+      "humanities": "Humanities & philosophy",
+      "psychology": "Psychology & self-improvement",
+      "economy": "Economy & business",
+      "society": "Society, politics & law",
+      "science": "Science",
+      "tech": "Tech & IT",
+      "art": "Arts & culture",
+      "history": "History & travel"
+    },
+    "loading": "Creating your picks. This takes about 10–30 seconds...",
+    "result": {
+      "title": "Picks from {lib}",
+      "empty": "No picks found",
+      "Y": "Available to borrow",
+      "N": "On loan",
+      "unknown": "Availability unknown",
+      "again": "← Change taste",
+      "restart": "Start over",
+      "notice": "Availability is based on the previous day and may differ from the current status. Please check with the library before visiting.",
+      "ai": "The AI chose from this library's book list. The reasons are AI-written and may contain mistakes."
+    },
+    "errors": {
+      "auth": "Please log in to continue.",
+      "limit": "You've used all of today's picks. Please try again tomorrow.",
+      "searchLimit": "You've used all of today's book searches. Please try again tomorrow.",
+      "few": "This library doesn't have enough books for that genre mix. Try other genres or another library. (Today's count was not used)",
+      "library_limit": "We've reached today's limit for library data lookups. Please try again tomorrow. (Today's count was not used)",
+      "library": "We couldn't get the library data. Please try again in a moment. (Today's count was not used)",
+      "ai": "We couldn't create your picks. Please try again in a moment. (Today's count was not used)",
+      "server": "Something went wrong. Please try again in a moment.",
+      "net": "Please check your connection and try again.",
+      "genres": "Please choose 1–3 genres.",
+      "pickLib": "Please choose a library first.",
+      "query": "Please check your search (up to 40 characters; letters, numbers and basic symbols only)."
     }
   }
 }

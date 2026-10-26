@@ -126,3 +126,43 @@ Vercel → 프로젝트 → **Settings → Environment Variables**에 추가한 
 11. **새 비밀번호로 로그인**: 로그아웃 후 새 비밀번호로 로그인 성공, 옛 비밀번호는 실패.
 12. **영어 확인**: `/en/signup`, `/en/login`, `/en/account`에서 같은 흐름을 한 번 더(문구·이동 주소가 `/en` 기준인지).
 13. **보안 헤더**: 브라우저 주소 `https://securityheaders.com/?q=billyeobolkka-landing.vercel.app` 로 확인하거나, F12 → Network에서 응답 헤더에 `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`가 있는지 봐요.
+
+# AI 도서 추천 설치 안내
+
+## 어떻게 동작하나요
+- 화면: `/recommend`, `/en/recommend` (로그인한 사람만). 도서관 선택 → 취향(연령대·성별·장르·재미있게 읽은 책) → 추천.
+- 서버(`api/recommend.js`)가 순서대로 처리해요: 로그인 확인 → 입력 허용값 검증 → **하루 5회 확보(DB)** → 이 도서관 후보 수집(정보나루) → Claude(기본 Haiku 5.5)가 **후보 안에서만** 선택 → 서버가 ISBN을 다시 검증 → 대출 가능 여부 조회.
+- 후보: 같은 성별·연령의 이 도서관 인기대출(소장이 확실한 책) + 최근 입수 도서. 어린이·학습참고서는 제외해요.
+- 취향 단서: 좋아한 책을 읽은 다른 독자들이 함께 읽은 책(정보나루 마니아 추천)의 **제목만** Claude에게 힌트로 줘요. 후보가 아니라서 추천 대상은 아니에요.
+- Claude에 보내는 글: 허용된 ID(연령대·성별·장르)를 정해진 라벨로 바꾼 것 + 정보나루가 준 책 제목·저자뿐이에요. 사용자가 입력한 글은 들어가지 않아요(좋아한 책은 검색해서 고른 ISBN만 서버로 보내고, 제목은 서버가 정보나루에서 다시 가져와요).
+- 표지 이미지는 쓰지 않아요(아래 "이용 조건").
+- 키(`LIBRARY_API_KEY`, `ANTHROPIC_API_KEY`)는 서버 환경변수에서만 읽어요. 브라우저 코드·응답·로그에 나가지 않아요.
+- 정보나루 결과는 Vercel Runtime Cache에 저장해서 호출을 아껴요(인기 24시간, 최근 입수 24시간, 대출 가능 여부 12시간, 마니아 추천 7일, 책 정보 30일). 캐시에는 공개 도서 정보만 있고 사용자 정보는 없어요.
+- 자동 시험: `npm test` (정보나루·Claude·Supabase를 가짜로 바꿔 입력 검증·후보 규칙·횟수 제한·오류 처리 확인)
+
+## 내가 직접 해야 하는 설정 체크리스트
+- [ ] **정보나루 인증키**: Vercel → Settings → Environment Variables에 `LIBRARY_API_KEY` 추가(Production). 일일 호출 한도는 마이페이지에서 확인해요. 테스트 단계라 서버 IP 등록은 하지 않아요 → 한도에 닿으면 화면에 "도서 정보 조회 한도" 안내가 나오고 내일 다시 쓸 수 있어요.
+- [ ] **Anthropic API 키**: https://console.anthropic.com → API Keys → Create Key (**`sk-ant-api03-`로 시작**해야 해요). 결제 크레딧을 충전하고, 같은 콘솔에서 **월 사용 한도(Spend limit)** 를 낮게 설정해요(Haiku 5.5 기준 추천 1회에 약 0.001~0.003달러). Vercel에 `ANTHROPIC_API_KEY`로 추가해요. 키는 채팅에 붙이지 마세요.
+- [ ] (선택) Vercel에 `RECOMMEND_MODEL`(기본 `claude-haiku-5-5`), `RECOMMEND_EFFORT`(기본 `low`)를 추가하면 코드 수정 없이 모델·생각 깊이를 바꿀 수 있어요.
+- [ ] **Supabase SQL**: SQL Editor에서 `supabase/migrations/20261026000000_usage_limits.sql` 전체를 붙여 넣고 Run. (사용 기록 표 `usage_events` + 함수 3개. 여러 번 실행해도 안전해요)
+  - 확인: `select relname, relrowsecurity from pg_class where relname = 'usage_events';` → `relrowsecurity`가 **true** 여야 해요.
+  - 확인: `select grantee, privilege_type from information_schema.role_table_grants where table_name = 'usage_events';` → 결과가 **비어 있어야** 해요(사용자가 표를 직접 못 건드려요).
+- [ ] 위 환경변수를 넣은 뒤 **Redeploy**.
+- [ ] **도서관 목록 갱신(분기에 한 번)**: 작업 폴더에서 `node scripts/sync-libraries.js`(정보나루 약 4회) 실행 → `data/libraries.json`이 바뀌면 커밋.
+
+## 시나리오 시험 (배포 후)
+> 일일 추천 한도는 5회예요. 시험하다 한도에 닿으면 내일 다시 하거나, SQL Editor에서 `delete from public.usage_events where user_id = '<내 사용자 id>';` 로 직접 비워도 돼요.
+1. 로그아웃 상태로 `/recommend` 접속 → 로그인 화면으로 이동(내용이 안 보여야 해요). 로그인하면 `/recommend`로 돌아와요.
+2. 홈의 **추천받기** 버튼으로도 들어가져요.
+3. **경기 → 성남시 → 성남시 위례도서관**(하남시·송파구에도 같은 이름이 있으니 시·군·구를 꼭 확인) → 다음.
+4. 20대·남성·소설·역사·여행, 좋아한 책에 "노인과 바다"를 검색해서 추가 → **추천 받기**. 로딩이 10~30초 보이고, 결과 카드(제목·저자·추천 이유·대출 가능 배지)와 "오늘 남은 추천 4/5회"가 나와요.
+5. 결과의 책이 실제로 그 도서관에 있는지 도서관 누리집이나 정보나루에서 몇 권 확인해요.
+6. 같은 방식으로 5번을 더 시도 → 6번째에 "오늘 추천 횟수를 모두 사용했어요" 안내.
+7. `/en/recommend`에서 영어 화면과 영어 추천 이유 확인.
+8. 일부러 오류 상황 확인: Vercel에서 `ANTHROPIC_API_KEY`를 잘못된 값으로 바꾸고 추천 → "추천을 만들지 못했어요 (오늘 횟수는 차감되지 않아요)"가 나오고 남은 횟수가 줄지 않아야 해요(되돌리기 확인). 시험 뒤 키를 원래대로 돌려 놓으세요.
+9. Vercel → Logs에서 `api/recommend`의 `정보나루 호출`, `Claude 사용량` 줄로 호출 횟수·토큰을 확인해요(키·사용자 정보는 로그에 없어요).
+
+## 이용 조건·주의 (정보나루 매뉴얼)
+- **표지 이미지(`bookImageURL`)는 "비영리 서비스의 화면 표시에 한하여" 쓸 수 있고, 영리 목적 이용·복사·저장·재배포·AI 입력·학습은 금지**예요. 그래서 이 기능은 표지를 가져오지도, 보여 주지도, Claude에 보내지도 않아요. 유료 구독(영리)을 시작하기 전에 정보나루에 표지·데이터 이용 조건을 문의하세요.
+- 대출 가능 여부는 **전날 기준**이라 실제와 다를 수 있어요(결과 화면에 안내 문구가 있어요).
+- 정보나루 API는 오류도 HTTP 200으로 주고 본문의 `errCode`로 알려 줘요. 코드에서 모두 처리하고, 화면에는 정리된 문구만 보여요.

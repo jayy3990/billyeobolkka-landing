@@ -1,0 +1,141 @@
+{{> authtop}}
+<style>
+  .rec .wrap { max-width:720px; }
+  .rec { padding:8px 0 56px; }
+  .rec h1 { font-size:clamp(28px,7vw,38px); }
+  .rec h2 { font-size:22px; font-weight:800; margin-bottom:6px; }
+  .usage { margin-top:10px; display:inline-block; padding:4px 14px; border-radius:999px; background:var(--soft); color:var(--primary); font-weight:800; font-size:15px; }
+  .stepper { list-style:none; display:flex; gap:8px; margin-top:20px; counter-reset:s; }
+  .stepper li { flex:1; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font-weight:700; font-size:15px; text-align:center; }
+  .stepper li::before { counter-increment:s; content:counter(s) ". "; }
+  .stepper li[aria-current="step"] { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .stepper li.done { color:var(--primary); border-color:var(--primary); }
+  .rec .card h2 + p { color:var(--muted); font-size:16px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  select { width:100%; margin-top:6px; padding:14px 16px; font-size:18px; font-family:inherit; border:2px solid var(--line); border-radius:12px; background:#fff; color:var(--text); min-height:52px; }
+  select:focus-visible { outline:3px solid var(--primary); outline-offset:2px; }
+  .liblist { margin-top:14px; display:grid; gap:10px; max-height:360px; overflow:auto; padding:2px; }
+  .lib { display:flex; gap:12px; align-items:flex-start; padding:14px 16px; border:2px solid var(--line); border-radius:14px; background:#fff; cursor:pointer; min-height:56px; }
+  .lib input { flex:none; width:22px; height:22px; margin-top:3px; accent-color:var(--primary); }
+  .lib b { display:block; font-size:17px; }
+  .lib span { display:block; color:var(--muted); font-size:14px; line-height:1.4; }
+  .lib:has(input:checked) { border-color:var(--primary); background:var(--soft); }
+  .lib:has(input:focus-visible) { outline:3px solid var(--primary); outline-offset:2px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .chip { min-height:44px; padding:8px 16px; border-radius:999px; border:2px solid var(--line); background:#fff; color:var(--text); font:inherit; font-size:16px; font-weight:700; cursor:pointer; }
+  .chip[aria-pressed="true"] { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .chip:disabled { opacity:.45; cursor:not-allowed; }
+  fieldset { border:0; margin-top:18px; min-width:0; }
+  legend { font-weight:800; padding:0; }
+  .hint { margin-top:6px; color:var(--muted); font-size:15px; }
+  .searchrow { display:flex; gap:8px; margin-top:6px; }
+  .searchrow input { margin-top:0; flex:1; min-width:0; }
+  .searchrow .btn { width:auto; margin-top:0; padding:0 20px; min-height:52px; font-size:17px; }
+  .results { list-style:none; margin-top:10px; display:grid; gap:8px; }
+  .results li { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:#fff; }
+  .results li span { min-width:0; }
+  .results li b { display:block; font-size:16px; }
+  .results li small { color:var(--muted); }
+  .mini { flex:none; min-height:40px; padding:0 14px; border-radius:10px; border:2px solid var(--primary); background:#fff; color:var(--primary); font:inherit; font-weight:800; cursor:pointer; }
+  .mini:disabled { opacity:.45; cursor:default; }
+  .picked { list-style:none; display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .picked li { display:flex; align-items:center; gap:6px; padding:6px 6px 6px 14px; border-radius:999px; background:var(--soft); color:var(--primary); font-weight:700; font-size:15px; }
+  .picked button { min-width:32px; min-height:32px; border:0; border-radius:50%; background:var(--primary); color:#fff; font-size:16px; cursor:pointer; }
+  .actions { display:flex; gap:10px; margin-top:22px; flex-wrap:wrap; }
+  .actions .btn { margin-top:0; flex:1; min-width:150px; }
+  .btn.ghost { background:var(--surface); color:var(--primary); border:2px solid var(--primary); }
+  .loading { text-align:center; padding:36px 16px; }
+  .spin { width:44px; height:44px; margin:0 auto 14px; border-radius:50%; border:5px solid var(--soft); border-top-color:var(--primary); animation:spin 1s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation:none; } }
+  .picks { list-style:none; display:grid; gap:14px; margin-top:16px; }
+  .pick { background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:20px 22px; }
+  .pick h3 { font-size:19px; line-height:1.4; }
+  .pick .by { color:var(--muted); font-size:15px; margin-top:2px; }
+  .pick .why { margin-top:10px; line-height:1.7; }
+  .badge { display:inline-block; margin-top:12px; padding:4px 12px; border-radius:999px; font-size:14px; font-weight:800; }
+  .badge.Y { background:#e6f6ec; color:#14532d; }
+  .badge.N { background:#fff4d6; color:#7a4b00; }
+  .badge.unknown { background:#eceef6; color:#3b4157; }
+  .notice { margin-top:18px; padding:14px 16px; border-radius:12px; background:var(--soft); color:var(--text); font-size:15px; line-height:1.6; }
+  #result-title { margin-top:22px; }
+  [hidden] { display:none !important; }
+  @media (max-width:560px) { .row { grid-template-columns:1fr; } .stepper li { padding:8px 4px; font-size:13px; } .searchrow { flex-direction:column; } .searchrow .btn { width:100%; } }
+</style>
+<section class="rec"><div class="wrap">
+  <h1>{{rec.title}}</h1>
+  <p class="lead">{{rec.lead}}</p>
+  <p class="usage" id="usage" hidden></p>
+  <ol class="stepper" id="stepper" aria-label="{{rec.stepsLabel|attr}}">
+    <li data-step="region">{{rec.steps.region}}</li>
+    <li data-step="taste">{{rec.steps.taste}}</li>
+    <li data-step="result">{{rec.steps.result}}</li>
+  </ol>
+  <div id="msg" role="alert" aria-live="polite"></div>
+
+  <!-- 1단계: 도서관 -->
+  <div id="step-region" class="card">
+    <h2 tabindex="-1">{{rec.region.title}}</h2>
+    <div class="row">
+      <div><label for="sido">{{rec.region.sido}}</label><select id="sido"><option value="">{{rec.region.choose}}</option></select></div>
+      <div><label for="gu">{{rec.region.gu}}</label><select id="gu" disabled><option value="">{{rec.region.choose}}</option></select></div>
+    </div>
+    <div id="libsbox" hidden>
+      <p class="hint" id="libshint"></p>
+      <div class="liblist" id="libs" role="radiogroup" aria-label="{{rec.region.libs|attr}}"></div>
+    </div>
+    <div class="actions"><button class="btn" id="to-taste" type="button" disabled>{{rec.region.next}}</button></div>
+  </div>
+
+  <!-- 2단계: 취향 -->
+  <div id="step-taste" class="card" hidden>
+    <h2 tabindex="-1">{{rec.taste.title}}</h2>
+    <p id="chosen-lib"></p>
+    <div class="row">
+      <div><label for="age">{{rec.taste.age}}</label><select id="age"></select></div>
+      <div><label for="gender">{{rec.taste.gender}}</label><select id="gender"></select></div>
+    </div>
+    <fieldset>
+      <legend>{{rec.taste.genres}}</legend>
+      <div class="chips" id="genres"></div>
+    </fieldset>
+    <fieldset>
+      <legend>{{rec.taste.liked}}</legend>
+      <p class="hint">{{rec.taste.likedHint}}</p>
+      <div class="searchrow">
+        <input id="q" type="text" maxlength="40" autocomplete="off" aria-label="{{rec.taste.search|attr}}" placeholder="{{rec.taste.search|attr}}">
+        <button class="btn" id="qbtn" type="button">{{rec.taste.searchBtn}}</button>
+      </div>
+      <ul class="results" id="results"></ul>
+      <ul class="picked" id="picked" aria-live="polite"></ul>
+    </fieldset>
+    <div class="actions">
+      <button class="btn ghost" id="to-region" type="button">{{rec.taste.back}}</button>
+      <button class="btn" id="submit" type="button">{{rec.taste.submit}}</button>
+    </div>
+  </div>
+
+  <!-- 로딩 -->
+  <div id="step-loading" class="card loading" hidden role="status" aria-live="polite">
+    <div class="spin" aria-hidden="true"></div>
+    <p>{{rec.loading}}</p>
+  </div>
+
+  <!-- 3단계: 결과 -->
+  <div id="step-result" hidden>
+    <h2 id="result-title" tabindex="-1"></h2>
+    <ol class="picks" id="picks"></ol>
+    <p class="notice">{{rec.result.notice}}<br>{{rec.result.ai}}</p>
+    <div class="actions">
+      <button class="btn ghost" id="to-taste2" type="button">{{rec.result.again}}</button>
+      <button class="btn" id="restart" type="button">{{rec.result.restart}}</button>
+    </div>
+  </div>
+</div></section>
+<script>
+  window.REC_T = {{rec|json}};
+  window.REC_LANG = {{$lang|json}};
+  window.REC_LOGIN = {{$login|json}};
+</script>
+<script src="/recommend.js" defer></script>
+{{> authbottom}}

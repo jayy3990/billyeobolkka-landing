@@ -29,6 +29,7 @@ const PAGES = [
   { name: "forgot-password", path: "forgot-password", noindex: true },
   { name: "account", path: "account", noindex: true, dynamic: true },
   { name: "reset-password", path: "reset-password", noindex: true, dynamic: true },
+  { name: "recommend", path: "recommend", noindex: true, dynamic: true },
 ];
 const pageByName = (n) => PAGES.find((p) => p.name === n);
 
@@ -108,6 +109,7 @@ function render(tpl, lang, page) {
     signup: pageUrl(lang, pageByName("signup")),
     forgot: pageUrl(lang, pageByName("forgot-password")),
     account: pageUrl(lang, pageByName("account")),
+    recommend: pageUrl(lang, pageByName("recommend")),
     cur_ko: lang.code === "ko" ? 'aria-current="true"' : "",
     cur_en: lang.code === "en" ? 'aria-current="true"' : "",
   };
