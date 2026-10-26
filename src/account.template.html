@@ -1,4 +1,15 @@
 {{> authtop}}
+<style>
+  .prefs h2 { font-size:22px; font-weight:800; }
+  .prefs dl { display:grid; grid-template-columns:auto 1fr; gap:8px 16px; margin-top:14px; }
+  .prefs dt { font-weight:800; color:var(--muted); font-size:15px; }
+  .prefs dd { margin:0; word-break:keep-all; }
+  .prefs .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+  .prefs .actions .btn { margin-top:0; flex:1; min-width:150px; }
+  #prefs-msg { margin-top:14px; padding:12px 14px; border-radius:12px; font-weight:700; display:none; }
+  #prefs-msg.ok { display:block; background:#e6f6ec; color:#14532d; }
+  #prefs-msg.err { display:block; background:#fdecec; color:#7f1d1d; }
+</style>
 <section class="narrow"><div class="wrap">
   <h1>{{auth.account.title}}</h1>
   <p class="lead">{{auth.account.lead}}</p>
@@ -13,7 +24,22 @@
     <button class="btn" id="submit" type="submit">{{auth.account.save}}</button>
     <div id="msg" role="status" aria-live="polite"></div>
   </form>
+  <div class="card prefs" id="prefs-card">
+    <h2>{{prefs.title}}</h2>
+    <p class="hint">{{prefs.lead}}</p>
+    <p id="prefs-empty" hidden>{{prefs.empty}}</p>
+    <dl id="prefs-list" hidden></dl>
+    <div class="actions" id="prefs-actions" hidden>
+      <a class="btn ghost" href="{{$recommend}}">{{prefs.edit}}</a>
+      <button class="btn ghost" id="prefs-delete" type="button">{{prefs.delete}}</button>
+    </div>
+    <div id="prefs-msg" role="status" aria-live="polite"></div>
+  </div>
   <button class="btn ghost" type="button" data-auth-logout>{{auth.account.logout}}</button>
   <p class="links"><a href="{{$home}}">{{auth.account.toHome}}</a></p>
 </div></section>
+<script>
+  window.PREF_T = { t: {{prefs|json}}, age: {{rec.age|json}}, gender: {{rec.gender|json}}, genre: {{rec.genre|json}} };
+</script>
+<script src="/prefs.js" defer></script>
 {{> authbottom}}

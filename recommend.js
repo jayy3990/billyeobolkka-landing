@@ -9,7 +9,7 @@
   var T = window.REC_T || {}, LANG = window.REC_LANG || 'ko';
   var MAX_GENRES = 3, MAX_LIKED = 3, MAX_REMAIN = 5;
   var $ = function (id) { return document.getElementById(id); };
-  var state = { data: null, sido: '', gu: '', lib: null, genres: [], liked: [], busy: false };
+  var state = { data: null, sido: '', gu: '', lib: null, genres: [], liked: [], busy: false, saved: null };
 
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o && o[k] != null ? o[k] : m; }); }
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
@@ -66,7 +66,7 @@
     items.forEach(function (it) { var o = el('option', '', it.label); o.value = it.value; if (it.value === selected) o.selected = true; sel.appendChild(o); });
   }
   function initRegion() {
-    fetch('/data/libraries.json', { cache: 'force-cache' })
+    return fetch('/data/libraries.json', { cache: 'force-cache' })
       .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
       .then(function (d) {
         state.data = d;
@@ -75,8 +75,9 @@
         var opts = [{ value: '', label: T.region.choose }];
         d.sido.forEach(function (s) { if (counts[s]) opts.push({ value: s, label: s + ' (' + counts[s] + ')' }); });
         fillSelect($('sido'), opts, '');
+        return d;
       })
-      .catch(function () { say('err', T.region.loadFail); });
+      .catch(function () { say('err', T.region.loadFail); return null; });
   }
   function onSido() {
     state.sido = $('sido').value; state.gu = ''; state.lib = null;
@@ -124,17 +125,20 @@
       box.appendChild(b);
     });
   }
+  function syncChips() {
+    var chips = $('genres').querySelectorAll('.chip');
+    for (var j = 0; j < chips.length; j++) {
+      var on = state.genres.indexOf(chips[j].getAttribute('data-genre')) >= 0;
+      chips[j].setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+  }
   function toggleGenre(k) {
     var i = state.genres.indexOf(k);
     if (i >= 0) state.genres.splice(i, 1);
     else if (state.genres.length < MAX_GENRES) state.genres.push(k);
     else { say('err', T.taste.genresMax); return; }
     say('', '');
-    var chips = $('genres').querySelectorAll('.chip');
-    for (var j = 0; j < chips.length; j++) {
-      var on = state.genres.indexOf(chips[j].getAttribute('data-genre')) >= 0;
-      chips[j].setAttribute('aria-pressed', on ? 'true' : 'false');
-    }
+    syncChips();
   }
 
   function renderPicked() {
@@ -188,7 +192,7 @@
     }).then(function (r) {
       if (r.status === 401) { go('taste', false); return authFail(); }
       var d = r.data || {};
-      if (d.ok && d.items && d.items.length) { if (typeof d.remaining === 'number') showRemaining(d.remaining); renderPicks(d.items); go('result'); return; }
+      if (d.ok && d.items && d.items.length) { if (typeof d.remaining === 'number') showRemaining(d.remaining); renderPicks(d.items); go('result'); savePrefs(); return; }
       go('taste', false);
       if (d.error === 'limit') showRemaining(0);
       say('err', err(d.error || 'server'));
@@ -209,6 +213,63 @@
     });
   }
 
+  // ── 저장된 내 설정 ─────────────────────────────────────────
+  function summarize(p) {
+    var parts = [];
+    if (p.libName) parts.push(p.libName);
+    if (p.ageGroup && p.ageGroup !== 'any') parts.push(T.age[p.ageGroup]);
+    if (p.gender && p.gender !== 'any') parts.push(T.gender[p.gender]);
+    if ((p.genres || []).length) parts.push(p.genres.map(function (g) { return T.genre[g] || g; }).join(', '));
+    return parts.join(' · ');
+  }
+  // 저장된 설정을 화면 상태에 채워 넣어요 (서버는 추천할 때 값을 다시 검증해요)
+  function applySaved(p) {
+    state.saved = p;
+    $('age').value = T.age[p.ageGroup] ? p.ageGroup : 'any';
+    $('gender').value = T.gender[p.gender] ? p.gender : 'any';
+    state.genres = (p.genres || []).filter(function (g) { return !!T.genre[g]; }).slice(0, MAX_GENRES);
+    syncChips();
+    state.liked = (p.liked || []).slice(0, MAX_LIKED).map(function (b) { return { isbn13: b.isbn13, title: b.title }; });
+    renderPicked();
+    $('save-prefs').checked = true; // 이미 저장에 동의한 사람은 기본으로 켜 둬요
+    var lib = p.libCode && state.data ? state.data.libs.filter(function (l) { return l.c === p.libCode; })[0] : null;
+    if (lib) {
+      $('sido').value = lib.s; onSido(); $('gu').value = lib.g; onGu();
+      var radios = $('libs').querySelectorAll('input[type=radio]');
+      for (var i = 0; i < radios.length; i++) if (radios[i].value === lib.c) { radios[i].checked = true; }
+      state.lib = lib; $('to-taste').disabled = false;
+    } else if (p.libName === null) {
+      say('err', T.prefs.libGone);
+    }
+    $('saved-summary').textContent = fmt(T.prefs.found, { summary: summarize(p) });
+    $('saved-banner').hidden = false;
+    $('use-saved').hidden = !(lib && state.genres.length);
+  }
+  function loadSaved() {
+    return fetch('/api/preferences', { credentials: 'same-origin', cache: 'no-store' })
+      .then(function (r) { return r.status === 200 ? r.json() : null; })
+      .then(function (d) { if (d && d.ok && d.prefs) applySaved(d.prefs); })
+      .catch(function () {});
+  }
+  // 추천이 성공한 뒤에만 저장해요 (체크했을 때만). 저장이 실패해도 추천 결과는 그대로 보여요.
+  // 지금 고른 설정이 이미 저장된 것과 같은지 (같으면 다시 저장하지 않아요: 불필요한 요청·횟수 사용 방지)
+  function sameAsSaved() {
+    var p = state.saved;
+    if (!p || !state.lib || p.libCode !== state.lib.c || p.ageGroup !== $('age').value || p.gender !== $('gender').value) return false;
+    var a = (p.genres || []).slice().sort().join(','), b = state.genres.slice().sort().join(',');
+    var x = (p.liked || []).map(function (l) { return l.isbn13; }).sort().join(','), y = state.liked.map(function (l) { return l.isbn13; }).sort().join(',');
+    return a === b && x === y;
+  }
+  function savePrefs() {
+    if (!$('save-prefs').checked || !state.lib || sameAsSaved()) return;
+    fetch('/api/preferences', {
+      method: 'PUT', credentials: 'same-origin', cache: 'no-store', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ libCode: state.lib.c, ageGroup: $('age').value, gender: $('gender').value, genres: state.genres.slice(), liked: state.liked.map(function (b) { return b.isbn13; }) })
+    }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok && d && d.ok, d: d }; }); })
+      .then(function (r) { if (r.ok) { state.saved = r.d.prefs; say('ok', T.prefs.saved); } else say('err', T.prefs.saveFail); })
+      .catch(function () { say('err', T.prefs.saveFail); });
+  }
+
   // ── 연결 ───────────────────────────────────────────────────
   $('sido').addEventListener('change', onSido);
   $('gu').addEventListener('change', onGu);
@@ -221,11 +282,13 @@
   $('restart').addEventListener('click', function () {
     state.lib = null; state.genres = []; state.liked = []; renderPicked(); clear($('results')); $('q').value = '';
     var chips = $('genres').querySelectorAll('.chip'); for (var i = 0; i < chips.length; i++) chips[i].setAttribute('aria-pressed', 'false');
-    $('sido').value = ''; onSido(); say('', ''); go('region');
+    $('sido').value = ''; onSido(); say('', ''); $('save-prefs').checked = !!state.saved; go('region');
   });
   $('qbtn').addEventListener('click', doSearch);
   $('q').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
   $('submit').addEventListener('click', submit);
+  $('use-saved').addEventListener('click', function () { if (state.lib && state.genres.length) submit(); });
 
-  initTaste(); initRegion(); loadUsage(); go('region', false);
+  initTaste(); loadUsage(); go('region', false);
+  initRegion().then(function (d) { if (d !== null) loadSaved(); });
 })();

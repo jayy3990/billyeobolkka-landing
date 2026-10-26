@@ -58,6 +58,10 @@
   .badge.N { background:#fff4d6; color:#7a4b00; }
   .badge.unknown { background:#eceef6; color:#3b4157; }
   .notice { margin-top:18px; padding:14px 16px; border-radius:12px; background:var(--soft); color:var(--text); font-size:15px; line-height:1.6; }
+  .check { display:flex; gap:10px; align-items:flex-start; margin-top:20px; font-weight:700; cursor:pointer; }
+  .check input { flex:none; width:22px; height:22px; margin-top:3px; accent-color:var(--primary); }
+  #saved-banner { margin:0 0 16px; }
+  #saved-banner .actions { margin-top:12px; }
   #result-title { margin-top:22px; }
   [hidden] { display:none !important; }
   @media (max-width:560px) { .row { grid-template-columns:1fr; } .stepper li { padding:8px 4px; font-size:13px; } .searchrow { flex-direction:column; } .searchrow .btn { width:100%; } }
@@ -76,6 +80,10 @@
   <!-- 1단계: 도서관 -->
   <div id="step-region" class="card">
     <h2 tabindex="-1">{{rec.region.title}}</h2>
+    <div id="saved-banner" class="notice" hidden>
+      <p id="saved-summary"></p>
+      <div class="actions"><button class="btn" id="use-saved" type="button">{{rec.prefs.useSaved}}</button></div>
+    </div>
     <div class="row">
       <div><label for="sido">{{rec.region.sido}}</label><select id="sido"><option value="">{{rec.region.choose}}</option></select></div>
       <div><label for="gu">{{rec.region.gu}}</label><select id="gu" disabled><option value="">{{rec.region.choose}}</option></select></div>
@@ -109,6 +117,8 @@
       <ul class="results" id="results"></ul>
       <ul class="picked" id="picked" aria-live="polite"></ul>
     </fieldset>
+    <label class="check"><input type="checkbox" id="save-prefs"><span>{{rec.prefs.save}}</span></label>
+    <p class="hint">{{rec.prefs.saveHint}}</p>
     <div class="actions">
       <button class="btn ghost" id="to-region" type="button">{{rec.taste.back}}</button>
       <button class="btn" id="submit" type="button">{{rec.taste.submit}}</button>

@@ -35,6 +35,25 @@ function validateInput(body, isKnownLibrary) {
   return { ok: true, value: { lang, libCode: b.libCode, ageGroup: b.ageGroup, gender: b.gender, genres, liked } };
 }
 
+// 저장할 선호 설정 검증: 추천 입력과 같은 허용 목록을 써요. 도서관·장르·좋아한 책은 비어 있어도 돼요.
+function validatePrefs(body, isKnownLibrary) {
+  const b = body && typeof body === "object" ? body : {};
+  let libCode = null;
+  if (b.libCode !== undefined && b.libCode !== null && b.libCode !== "") {
+    if (!isKnownLibrary(b.libCode)) return { ok: false, error: "library" };
+    libCode = b.libCode;
+  }
+  if (!has(AGE_GROUPS, b.ageGroup)) return { ok: false, error: "age" };
+  if (!has(GENDERS, b.gender)) return { ok: false, error: "gender" };
+  const rawGenres = b.genres === undefined || b.genres === null ? [] : b.genres;
+  if (!Array.isArray(rawGenres) || rawGenres.length > LIMITS.maxGenres) return { ok: false, error: "genres" };
+  const genres = [...new Set(rawGenres)];
+  if (genres.length !== rawGenres.length || !genres.every((g) => has(GENRES, g))) return { ok: false, error: "genres" };
+  const rawLiked = b.liked === undefined || b.liked === null ? [] : b.liked;
+  if (!Array.isArray(rawLiked) || rawLiked.length > LIMITS.maxLiked || !rawLiked.every((i) => typeof i === "string" && ISBN13.test(i))) return { ok: false, error: "liked" };
+  return { ok: true, value: { libCode, ageGroup: b.ageGroup, gender: b.gender, genres, liked: [...new Set(rawLiked)] } };
+}
+
 // ── 2) 후보 조립 ───────────────────────────────────────────────
 // 장르 목록 → 정보나루에 보낼 KDC 대분류(중복 제거, 상한)
 function bucketsFor(genreIds) {
@@ -164,6 +183,6 @@ function extractJson(text) {
 }
 
 module.exports = {
-  PipelineError, validateInput, bucketsFor, matchesGenre, isAdultBook, assembleCandidates,
+  PipelineError, validateInput, validatePrefs, bucketsFor, matchesGenre, isAdultBook, assembleCandidates,
   clean, buildPrompt, validateOutput, extractJson, SCHEMA,
 };

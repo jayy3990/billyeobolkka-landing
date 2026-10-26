@@ -93,6 +93,17 @@ function sameOriginPost(req, res) {
   return true;
 }
 
+// PUT/DELETE 요청도 같은 사이트에서 온 것만 받아요 (CSRF 방지). PUT은 JSON 본문이 있어야 하고, DELETE는 본문이 없어도 돼요.
+function sameOriginMutation(req, res) {
+  const m = req.method;
+  if (m !== "PUT" && m !== "DELETE") { fail(res, 405, "method"); return false; }
+  const site = siteUrl();
+  if (!site) { fail(res, 500, "server"); return false; }
+  if (m === "PUT" && !String(req.headers["content-type"] || "").toLowerCase().startsWith("application/json")) { fail(res, 415, "bad_request"); return false; }
+  if (req.headers.origin !== site) { fail(res, 403, "forbidden"); return false; }
+  return true;
+}
+
 // ── Supabase 오류 → 정리된 코드 (원본 문구는 화면에 안 보여요) ───────────
 function mapAuthError(err) {
   if (!err) return null;
@@ -160,7 +171,7 @@ function captchaToken(body) {
 
 module.exports = {
   getEnv, siteUrl, safeNext, defaultAccount, loginPath, checkPassword, checkEmail, normLang,
-  send, fail, redirect, readBody, sameOriginPost, mapAuthError, deps,
+  send, fail, redirect, readBody, sameOriginPost, sameOriginMutation, mapAuthError, deps,
   RECOVERY_COOKIE, setRecoveryFlag, hasRecoveryFlag, clearSessionCookies, captchaToken,
   PASSWORD_MIN, PASSWORD_MAX,
 };

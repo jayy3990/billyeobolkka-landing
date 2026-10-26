@@ -353,7 +353,34 @@
       "net": "Please check your connection and try again.",
       "genres": "Please choose 1–3 genres.",
       "pickLib": "Please choose a library first.",
-      "query": "Please check your search (up to 40 characters; letters, numbers and basic symbols only)."
+      "query": "Please check your search (up to 40 characters; letters, numbers and basic symbols only).",
+      "liked": "We couldn't verify the books you picked. Please choose them from the list again."
+    },
+    "prefs": {
+      "found": "Loaded your saved settings: {summary}",
+      "useSaved": "Get picks with my saved settings",
+      "save": "Save these settings to my account",
+      "saveHint": "Your library, age group, gender, favorite genres and liked books are saved. They're saved when you get picks, and you can delete them anytime on your account page.",
+      "saved": "Your settings were saved.",
+      "saveFail": "Your picks are ready, but we couldn't save your settings. Please try again in a moment.",
+      "libGone": "Your saved library is no longer on the list. Please choose a library again."
     }
+  },
+  "prefs": {
+    "title": "My recommendation settings",
+    "lead": "Settings you saved on the picks page. They're filled in automatically next time.",
+    "empty": "No saved settings yet. On the picks page, check \"Save these settings to my account\" and get recommendations to save them.",
+    "library": "Default library",
+    "age": "Age group",
+    "gender": "Gender",
+    "genres": "Favorite genres",
+    "liked": "Books you enjoyed",
+    "none": "Not set",
+    "edit": "Edit on the picks page",
+    "delete": "Delete settings",
+    "confirm": "Delete all your saved recommendation settings?",
+    "deleted": "Your saved settings were deleted.",
+    "failed": "Something went wrong. Please try again in a moment.",
+    "loadFail": "Couldn't load your saved settings."
   }
 }
