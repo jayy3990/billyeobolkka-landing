@@ -12,7 +12,7 @@
   function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
   function say(kind, text) { var m = $('hmsg'); m.className = kind || ''; m.textContent = text || ''; }
 
-  var S = window.HIST_SHELF || {};
+  var S = window.HIST_SHELF || {}, M = window.HIST_MAIL || {};
   var records = [], onShelf = {};
   var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -38,6 +38,19 @@
         }).catch(function () { b.disabled = false; say('err', S.fail); });
     });
     return b;
+  }
+
+  // "메일로 받기": 이 기록을 내 로그인 이메일로 보내요
+  function sendMail(recordId, btn) {
+    btn.disabled = true; btn.textContent = M.sending; say('', '');
+    fetch('/api/mail/send', { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ historyId: recordId }) })
+      .then(function (r) { return r.json().catch(function () { return { ok: false }; }).then(function (d) { return { status: r.status, data: d }; }); })
+      .then(function (r) {
+        if (r.status === 401) return authFail();
+        if (r.data && r.data.ok) say('ok', fmt(M.sent, { email: r.data.to || '' }));
+        else say('err', r.data && r.data.error === 'limit' ? M.limit : M.fail);
+      }).catch(function () { say('err', M.fail); })
+      .then(function () { btn.disabled = false; btn.textContent = M.send; });
   }
 
   function card(r) {
@@ -71,6 +84,9 @@
       again.href = (window.HIST_RECOMMEND || '/recommend') + '?from=' + encodeURIComponent(r.id);
       actions.appendChild(again);
     }
+    var mailBtn = el('button', 'btn ghost', M.send); mailBtn.type = 'button';
+    mailBtn.addEventListener('click', function () { sendMail(r.id, mailBtn); });
+    actions.appendChild(mailBtn);
     var del = el('button', 'btn ghost', T['delete']); del.type = 'button';
     del.addEventListener('click', function () { removeOne(r.id, del); });
     actions.appendChild(del);

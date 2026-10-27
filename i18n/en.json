@@ -391,6 +391,15 @@
       "fail": "Couldn't add it to your bookshelf. Please try again in a moment.",
       "full": "Your bookshelf is full. Remove some books on the bookshelf page and try again.",
       "limit": "You've used today's book searches, so it couldn't be added. Please try again tomorrow."
+    },
+    "mail": {
+      "send": "Email me",
+      "sending": "Sending...",
+      "sent": "Sent to {email}. Please check your inbox (and spam folder).",
+      "limit": "You've used today's 5 emails. Please try again tomorrow.",
+      "fail": "Couldn't send the email. Please try again in a moment.",
+      "needHistory": "To get these by email, turn on \"Keep these picks in my history\" before getting picks.",
+      "hint": "Sends these picks to the email you signed up with."
     }
   },
   "prefs": {

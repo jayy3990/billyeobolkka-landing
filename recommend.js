@@ -193,7 +193,7 @@
     }).then(function (r) {
       if (r.status === 401) { go('taste', false); return authFail(); }
       var d = r.data || {};
-      if (d.ok && d.items && d.items.length) { if (typeof d.remaining === 'number') showRemaining(d.remaining); state.historyId = d.historyId || null; if (typeof d.shelfCount === 'number') showShelfNote(d.shelfCount); renderPicks(d.items); go('result'); showHistoryNote(d.historySaved); savePrefs(); return; }
+      if (d.ok && d.items && d.items.length) { if (typeof d.remaining === 'number') showRemaining(d.remaining); state.historyId = d.historyId || null; if (typeof d.shelfCount === 'number') showShelfNote(d.shelfCount); renderPicks(d.items); go('result'); showHistoryNote(d.historySaved); showMailBox(); savePrefs(); return; }
       go('taste', false);
       if (d.error === 'limit') showRemaining(0);
       say('err', err(d.error || 'server'));
@@ -201,6 +201,22 @@
       .then(function () { state.busy = false; $('submit').disabled = false; });
   }
   // 결과 화면의 기록 안내: 저장됐으면 링크, 저장을 켰는데 실패했으면 알려 줘요 (추천 결과는 그대로)
+  // "메일로 받기": 저장된 내 추천 기록을 내 로그인 이메일로 보내요 (받는 주소는 서버가 정해요)
+  function showMailBox() {
+    var ok = !!state.historyId;
+    $('mail-box').hidden = !ok;
+    var h = $('mail-hint'); h.hidden = ok; h.textContent = ok ? '' : T.mail.needHistory;
+    $('mail-send').disabled = false; $('mail-send').textContent = T.mail.send;
+  }
+  function sendMail() {
+    if (!state.historyId) return;
+    var b = $('mail-send'); b.disabled = true; b.textContent = T.mail.sending; say('', '');
+    post('/api/mail/send', { historyId: state.historyId }).then(function (r) {
+      if (r.status === 401) return authFail();
+      if (r.data && r.data.ok) { say('ok', fmt(T.mail.sent, { email: r.data.to || '' })); b.textContent = T.mail.send; b.disabled = false; return; }
+      say('err', r.data && r.data.error === 'limit' ? T.mail.limit : T.mail.fail); b.textContent = T.mail.send; b.disabled = false;
+    }).catch(function () { say('err', T.mail.fail); b.textContent = T.mail.send; b.disabled = false; });
+  }
   function showHistoryNote(saved) {
     $('history-note').hidden = !saved;
     if (!saved && $('save-history').checked) say('err', T.history.saveFail);
@@ -339,6 +355,7 @@
   $('qbtn').addEventListener('click', doSearch);
   $('q').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
   $('submit').addEventListener('click', submit);
+  $('mail-send').addEventListener('click', sendMail);
   $('use-saved').addEventListener('click', function () { if (state.lib && state.genres.length) submit(); });
 
   initTaste(); loadUsage(); loadShelfCount(); go('region', false);

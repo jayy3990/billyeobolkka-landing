@@ -142,6 +142,10 @@
     <ol class="picks" id="picks"></ol>
     <p class="notice">{{rec.result.notice}}<br>{{rec.result.ai}}</p>
     <p class="hint" id="history-note" hidden><a href="{{$history}}">{{rec.history.link}}</a></p>
+    <div class="actions" id="mail-box" hidden>
+      <button class="btn ghost" id="mail-send" type="button">{{rec.mail.send}}</button>
+    </div>
+    <p class="hint" id="mail-hint" hidden></p>
     <div class="actions">
       <button class="btn ghost" id="to-taste2" type="button">{{rec.result.again}}</button>
       <button class="btn" id="restart" type="button">{{rec.result.restart}}</button>
