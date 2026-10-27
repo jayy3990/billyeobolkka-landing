@@ -49,7 +49,7 @@ async function run(input) {
     try {
       const out = await ai.recommend(prompt);
       usage = { input: usage.input + out.usage.input, output: usage.output + out.usage.output };
-      items = core.validateOutput(out.data, byIsbn);
+      items = core.validateOutput(out.data, candidates);
     } catch (e) {
       if (e && e.code === "parse" && attempt === 0) continue; // 파싱 실패만 재시도
       throw e;

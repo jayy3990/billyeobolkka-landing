@@ -112,24 +112,44 @@ test("buildPrompt: 허용 라벨과 공식 서지정보만, 외부 데이터의 
 });
 
 // ═══ 4) 출력 검증 ═══
-test("validateOutput: 후보에 없는 ISBN·중복·빈 이유를 버려요", () => {
-  const map = new Map(["9780000000011", "9780000000028", "9780000000035", "9780000000042"].map((i) => [i, {}]));
+test("validateOutput: 번호가 범위 밖·제목 불일치(번호를 잘못 옮김)·중복·빈 이유를 버려요", () => {
+  const cands = [
+    { isbn13: "9780000000011", title: "채식주의자 :한강 장편소설" },
+    { isbn13: "9780000000028", title: "삼국지" },
+    { isbn13: "9780000000035", title: "불편한 편의점" },
+    { isbn13: "9780000000042", title: "호밀밭의 파수꾼" },
+    { isbn13: "9780000000059", title: "1984" },
+  ];
   const items = core.validateOutput({
     recommendations: [
-      { isbn13: "9780000000011", reason: "좋은 책 <b>굵게</b>" },
-      { isbn13: "9780000000011", reason: "중복" },
-      { isbn13: "1234567890123", reason: "지어낸 책" },
-      { isbn13: "9780000000028", reason: "   " },
-      { isbn13: "978-0000000035", reason: "하이픈 있어도 정리" },
-      { isbn13: "9780000000042", reason: "넷째" },
+      { id: 1, title: "채식주의자", reason: "좋은 책 <b>굵게</b>" },                 // 제목 앞부분만 따라 써도 통과
+      { id: 1, title: "채식주의자", reason: "중복" },                                 // 같은 책 중복
+      { id: 99, title: "없는 책", reason: "범위 밖 번호" },
+      { id: 2, title: "나르치스와 골드문트", reason: "번호는 삼국지인데 이유는 다른 책" },    // 번호를 잘못 옮긴 경우
+      { id: 3, title: "불편한 편의점", reason: "   " },                                // 빈 이유
+      { id: "4", title: "호밀밭의 파수꾼", reason: "문자열 번호도 정수로 인정" },
+      { id: 5, title: "1984", reason: "다섯째" },
+      { id: 1.5, title: "삼국지", reason: "정수가 아님" },
       "문자열", null,
     ],
-  }, map);
-  assert.deepEqual(items.map((i) => i.isbn13), ["9780000000011", "9780000000035", "9780000000042"]);
+  }, cands);
+  assert.deepEqual(items.map((i) => i.isbn13), ["9780000000011", "9780000000042", "9780000000059"]);
   assert.ok(!items[0].reason.includes("<"), "꺾쇠 제거");
-  assert.equal(core.validateOutput({ recommendations: [{ isbn13: "9780000000011", reason: "하나뿐" }] }, map), null, "인정할 만큼 안 남으면 null");
-  assert.equal(core.validateOutput(null, map), null);
-  assert.equal(core.validateOutput({ recommendations: "x" }, map), null);
+  assert.equal(core.validateOutput({ recommendations: [{ id: 1, title: "채식주의자", reason: "하나뿐" }] }, cands), null, "인정할 만큼 안 남으면 null");
+  assert.equal(core.validateOutput(null, cands), null);
+  assert.equal(core.validateOutput({ recommendations: "x" }, cands), null);
+  assert.equal(core.validateOutput({ recommendations: [{ isbn13: "9780000000011", reason: "예전 형식(ISBN)은 받지 않아요" }] }, cands), null);
+});
+
+test("titleMatches: 번역·다른 책은 거르고, 부제·띄어쓰기 차이는 허용", () => {
+  const m = core.titleMatches;
+  assert.equal(m("노인과 바다 :그래도 희망은", "노인과 바다"), true);
+  assert.equal(m("해저 2만 리", "해저2만리"), true);
+  assert.equal(m("The Catcher in the Rye", "the catcher in the rye"), true);
+  assert.equal(m("호밀밭의 파수꾼", "Narziss und Goldmund"), false);
+  assert.equal(m("호밀밭의 파수꾼", "The Old Man and the Sea"), false);
+  assert.equal(m("", "x"), false);
+  assert.equal(m("x", ""), false);
 });
 
 test("extractJson: 앞뒤에 글이 붙어도 JSON만 꺼내요", () => {
@@ -201,7 +221,17 @@ function fakeLibrary({ popularBooks, recentBooks = [], availability = { has: tru
   };
 }
 const novels = Array.from({ length: 30 }, (_, i) => book("97890000" + String(10000 + i), "소설책" + i + "번째", "작가" + i, "813.7"));
-const goodClaude = (ids) => async (prompt) => ({ data: { recommendations: ids.map((isbn13, i) => ({ isbn13, reason: "이유 " + i })) }, usage: { input: 100, output: 50 } });
+// 가짜 Claude: 프롬프트의 "번호|제목|…" 줄에서 번호·제목을 읽어서 같은 모양으로 답해요 (ISBN → 후보 번호는 novels 순서)
+const goodClaude = (isbns) => async (prompt) => {
+  const lines = prompt.user.split(/\r?\n/);
+  const recs = isbns.map((isbn, i) => {
+    const idx = novels.findIndex((b) => b.isbn13 === isbn);
+    const id = idx >= 0 ? idx + 1 : 9999;
+    const line = lines.find((l) => l.startsWith(id + "|"));
+    return { id, title: line ? line.split("|")[1] : "없는 책", reason: "이유 " + i };
+  });
+  return { data: { recommendations: recs }, usage: { input: 100, output: 50 } };
+};
 
 test("pipeline: 후보 안에서만 고르고, 제목·저자는 Claude가 아니라 정보나루 값을 써요", async () => {
   const lib = fakeLibrary({ popularBooks: novels, availability: (i) => (i.endsWith("1") ? { has: true, loan: false } : { has: true, loan: true }) });
