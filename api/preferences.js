@@ -36,6 +36,19 @@ async function refund(supabase, eventId) {
   try { await supabase.rpc("refund_usage", { p_event: eventId }); } catch (e) { /* 무시 */ }
 }
 
+// 내 행 수정 → 없으면 추가. 동시에 두 번 저장되어 추가가 겹치면(고유값 충돌 23505) 수정으로 한 번 더 시도해요.
+async function saveRow(supabase, uid, patch) {
+  const upd = await supabase.from(TABLE).update(patch).eq("user_id", uid).select("user_id");
+  if (upd.error) return { error: upd.error };
+  if (Array.isArray(upd.data) && upd.data.length) return { error: null };
+  const ins = await supabase.from(TABLE).insert({ user_id: uid, ...patch });
+  if (ins.error && String(ins.error.code) === "23505") {
+    const again = await supabase.from(TABLE).update(patch).eq("user_id", uid).select("user_id");
+    return { error: again.error || null };
+  }
+  return { error: ins.error || null };
+}
+
 module.exports = async (req, res) => {
   const method = req.method;
   if (method !== "GET" && !A.sameOriginMutation(req, res)) return;
@@ -78,9 +91,11 @@ module.exports = async (req, res) => {
       liked = books.map((b) => ({ isbn13: b.isbn13, title: core.clean(b.title, 80), author: core.clean(b.author, 40) }));
     }
 
-    const row = { user_id: uid, lib_code: input.libCode, age_group: input.ageGroup, gender: input.gender, genres: input.genres, liked };
-    const r = await supabase.from(TABLE).upsert(row, { onConflict: "user_id" });
-    if (r.error) { console.error("preferences 저장 실패", r.error.code); throw new Error("db"); }
+    // 저장: 먼저 내 행을 수정해 보고, 없으면 새로 추가해요.
+    // (upsert는 user_id 칸까지 고치는 SQL이 되는데, user_id는 DB 권한상 고칠 수 없게 막아 둬서 쓰지 않아요)
+    const patch = { lib_code: input.libCode, age_group: input.ageGroup, gender: input.gender, genres: input.genres, liked };
+    const saved = await saveRow(supabase, uid, patch);
+    if (saved.error) { console.error("preferences 저장 실패", saved.error.code); throw new Error("db"); }
     return A.send(res, 200, { ok: true, prefs: toClient({ lib_code: input.libCode, age_group: input.ageGroup, gender: input.gender, genres: input.genres, liked }) });
   } catch (e) {
     await refund(supabase, eventId);

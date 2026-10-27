@@ -5,6 +5,7 @@ const A = require("./_lib/auth");
 const libs = require("./_lib/libs");
 const core = require("./_lib/recommend-core");
 const pipeline = require("./_lib/recommend-pipeline");
+const history = require("./_lib/history");
 const { LibraryError } = require("./_lib/library");
 const { ClaudeError } = require("./_lib/claude");
 
@@ -23,6 +24,7 @@ module.exports = async (req, res) => {
     supabase = A.deps.createSupabase(req, res);
     const { data, error } = await supabase.auth.getUser(); // 쿠키 값을 믿지 않고 Supabase 서버에 확인
     if (error || !data || !data.user) return A.fail(res, 401, "auth");
+    const uid = data.user.id;
 
     const v = core.validateInput(A.readBody(req), libs.isKnownLibrary);
     if (!v.ok) return A.fail(res, 400, v.error);
@@ -34,7 +36,9 @@ module.exports = async (req, res) => {
     eventId = r.eventId;
 
     const out = await pipeline.run(v.value);
-    return A.send(res, 200, { ok: true, items: out.items, remaining: r.remaining });
+    // 추천 기록 저장 (사용자가 끄지 않았을 때만). 저장이 실패해도 추천 결과는 그대로 보여 줘요
+    const historySaved = v.value.saveHistory ? await history.save(supabase, uid, v.value, out) : false;
+    return A.send(res, 200, { ok: true, items: out.items, remaining: r.remaining, historySaved });
   } catch (e) {
     // 추천이 만들어지지 못했으면 오늘 횟수를 되돌려 줘요 (되돌리기도 실패하면 그냥 둬요)
     if (eventId && supabase) { try { await supabase.rpc("refund_usage", { p_event: eventId }); } catch (x) { /* 무시 */ } }

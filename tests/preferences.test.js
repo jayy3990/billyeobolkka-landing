@@ -36,8 +36,9 @@ const json = (res) => JSON.parse(res.body);
 const req = (method, body, extra = {}) => ({ method, body, query: {}, headers: { "content-type": "application/json", origin: "https://example.test", ...extra } });
 
 // 가짜 Supabase: user_preferences 표 한 줄을 흉내 내요 (RLS는 DB가 하고, 여기서는 호출 모양을 확인해요)
-function fakeSupabase({ user = { id: "u1" }, stored = null, reserve = { allowed: true, event_id: "ev1", remaining: 59 }, upsertError = null } = {}) {
-  const log = { rpcs: [], upserts: [], deletes: [], selects: [] };
+function fakeSupabase({ user = { id: "u1" }, stored = null, reserve = { allowed: true, event_id: "ev1", remaining: 59 }, upsertError = null, race = false } = {}) {
+  const log = { rpcs: [], writes: [], deletes: [], selects: [] };
+  let raced = false;
   const state = { row: stored };
   const sb = {
     log, state,
@@ -51,7 +52,21 @@ function fakeSupabase({ user = { id: "u1" }, stored = null, reserve = { allowed:
       assert.equal(table, "user_preferences");
       return {
         select: (cols) => ({ eq: (c, v) => ({ maybeSingle: async () => { log.selects.push([cols, c, v]); return { data: state.row && v === "u1" ? state.row : null, error: null }; } }) }),
-        upsert: async (row, opts) => { log.upserts.push([row, opts]); if (upsertError) return { error: { code: "XX" } }; state.row = { ...row }; return { error: null }; },
+        // 저장은 "내 행 수정 → 없으면 추가" (user_id는 수정하지 않아요)
+        update: (patch) => ({ eq: (c, v) => ({ select: async () => {
+          log.writes.push(["update", patch, v]);
+          if (upsertError) return { data: null, error: { code: "XX" } };
+          if (state.row && state.row.user_id === v) { state.row = { ...state.row, ...patch }; return { data: [{ user_id: v }], error: null }; }
+          return { data: [], error: null };
+        } }) }),
+        insert: async (row) => {
+          log.writes.push(["insert", row]);
+          if (upsertError) return { error: { code: "XX" } };
+          if (race && !raced) { raced = true; state.row = { ...row }; return { error: { code: "23505" } }; } // 동시에 다른 요청이 먼저 추가한 상황
+          if (state.row) return { error: { code: "23505" } };
+          state.row = { ...row };
+          return { error: null };
+        },
         delete: () => ({ eq: async (c, v) => { log.deletes.push([c, v]); state.row = null; return { error: null }; } }),
       };
     },
@@ -125,7 +140,7 @@ test("PUT: 허용값 밖은 거절하고, DB도 횟수도 건드리지 않아요
     const res = makeRes(); await handler(req("PUT", { ...good, ...patch }), res);
     assert.equal(res.code, 400, JSON.stringify(patch));
   }
-  assert.equal(sb.log.upserts.length, 0);
+  assert.equal(sb.log.writes.length, 0);
   assert.equal(sb.log.rpcs.length, 0);
 });
 
@@ -137,9 +152,11 @@ test("PUT: 좋아한 책이 없으면 정보나루·횟수 없이 저장, user_i
   assert.equal(res.code, 200);
   assert.equal(calls.length, 0, "정보나루 호출 없음");
   assert.equal(sb.log.rpcs.length, 0, "횟수도 안 써요");
-  const [row, opts] = sb.log.upserts[0];
-  assert.deepEqual(row, { user_id: "u1", lib_code: "141628", age_group: "20s", gender: "male", genres: ["novel", "history"], liked: [] });
-  assert.deepEqual(opts, { onConflict: "user_id" });
+  assert.deepEqual(sb.log.writes.map((w) => w[0]), ["update", "insert"], "처음 저장: 수정해 보고(없음) → 추가");
+  const [, patch] = sb.log.writes[0];
+  assert.ok(!("user_id" in patch), "수정할 때는 user_id를 건드리지 않아요 (DB 권한상 고칠 수 없는 칸)");
+  assert.deepEqual(sb.log.writes[0][2], "u1", "로그인한 사람의 행만 수정");
+  assert.deepEqual(sb.log.writes[1][1], { user_id: "u1", lib_code: "141628", age_group: "20s", gender: "male", genres: ["novel", "history"], liked: [] });
   const b = json(res);
   assert.deepEqual(b.prefs, { libCode: "141628", libName: "성남시 위례도서관", libSido: "경기", libGu: "성남시", ageGroup: "20s", gender: "male", genres: ["novel", "history"], liked: [] });
   assert.equal(res.headers["cache-control"], "no-store");
@@ -154,12 +171,12 @@ test("PUT: 좋아한 책의 제목·저자는 화면 값이 아니라 정보나�
   assert.deepEqual(sb.log.rpcs.map((r) => r[0]), ["reserve_usage"]);
   assert.deepEqual(sb.log.rpcs[0][1], { p_kind: "search" });
   assert.equal(calls.length, 2);
-  const stored = sb.log.upserts[0][0].liked;
+  const stored = sb.log.writes.find((w) => w[0] === "insert")[1].liked;
   assert.deepEqual(stored, [
     { isbn13: "9788937462788", title: "노인과 b 바다 /b", author: "어니스트 헤밍웨이" },
     { isbn13: "9788965793601", title: "로빈슨 크루소", author: "대니얼 디포" },
   ]);
-  assert.ok(!JSON.stringify(sb.log.upserts).includes("악성") && !JSON.stringify(sb.log.upserts).includes("img.example"));
+  assert.ok(!JSON.stringify(sb.log.writes).includes("악성") && !JSON.stringify(sb.log.writes).includes("img.example"));
   assert.ok(!stored[0].title.includes("<"), "꺾쇠는 제거");
 });
 
@@ -170,7 +187,7 @@ test("PUT: 없는 책(400)·정보나루 오류(502/503)·한도(429)·DB 오류
     let sb = fakeSupabase(); fakeBooks({});
     let res = makeRes(); await handler(req("PUT", { ...good, liked: ["9788937462788"] }), res);
     assert.equal(res.code, 400); assert.equal(json(res).error, "liked");
-    assert.equal(sb.log.upserts.length, 0);
+    assert.equal(sb.log.writes.length, 0);
     assert.deepEqual(sb.log.rpcs.map((r) => r[0]), ["reserve_usage", "refund_usage"]);
 
     // 정보나루 오류
@@ -181,14 +198,14 @@ test("PUT: 없는 책(400)·정보나루 오류(502/503)·한도(429)·DB 오류
       res = makeRes(); await handler(req("PUT", { ...good, liked: ["9788937462788"] }), res);
       assert.equal(res.code, status, code); assert.equal(json(res).error, name);
       assert.ok(!/SECRET/.test(res.body));
-      assert.equal(sb.log.upserts.length, 0);
+      assert.equal(sb.log.writes.length, 0);
       assert.deepEqual(sb.log.rpcs.map((r) => r[0]), ["reserve_usage", "refund_usage"]);
     }
 
     // 하루 한도
     sb = fakeSupabase({ reserve: { allowed: false, event_id: null, remaining: 0 } }); fakeBooks({});
     res = makeRes(); await handler(req("PUT", { ...good, liked: ["9788937462788"] }), res);
-    assert.equal(res.code, 429); assert.equal(sb.log.upserts.length, 0);
+    assert.equal(res.code, 429); assert.equal(sb.log.writes.length, 0);
 
     // DB 저장 실패
     sb = fakeSupabase({ upsertError: true }); fakeBooks({ "9788937462788": ["노인과 바다", "헤밍웨이"] });
@@ -220,4 +237,29 @@ test("DELETE: 내 설정만 지워요", async () => {
   assert.deepEqual(json(res), { ok: true });
   assert.deepEqual(sb.log.deletes, [["user_id", "u1"]]);
   assert.equal(sb.state.row, null);
+});
+
+test("PUT: 이미 저장된 설정은 수정만 하고(추가 안 함), 동시 저장으로 추가가 겹치면 수정으로 다시 시도해요", async () => {
+  // 이미 있는 행 → 수정만
+  let sb = fakeSupabase({ stored: { user_id: "u1", lib_code: "111347", age_group: "any", gender: "any", genres: [], liked: [] } });
+  let res = makeRes(); await handler(req("PUT", { ...good, ageGroup: "30s" }), res);
+  assert.equal(res.code, 200);
+  assert.deepEqual(sb.log.writes.map((w) => w[0]), ["update"], "있으면 수정만");
+  assert.equal(sb.state.row.age_group, "30s");
+  assert.equal(sb.state.row.user_id, "u1");
+
+  // 동시에 두 요청이 처음 저장 → 내 추가가 고유값 충돌(23505) → 수정으로 한 번 더
+  sb = fakeSupabase({ race: true });
+  res = makeRes(); await handler(req("PUT", good), res);
+  assert.equal(res.code, 200);
+  assert.deepEqual(sb.log.writes.map((w) => w[0]), ["update", "insert", "update"]);
+  assert.equal(sb.state.row.lib_code, "141628");
+});
+
+test("PUT: 어떤 경우에도 user_id는 수정 요청에 들어가지 않아요", async () => {
+  const sb = fakeSupabase({ stored: { user_id: "u1", lib_code: null, age_group: "any", gender: "any", genres: [], liked: [] } });
+  const res = makeRes(); await handler(req("PUT", { ...good, user_id: "attacker" }), res);
+  assert.equal(res.code, 200);
+  for (const w of sb.log.writes.filter((x) => x[0] === "update")) assert.ok(!("user_id" in w[1]));
+  assert.equal(sb.state.row.user_id, "u1");
 });

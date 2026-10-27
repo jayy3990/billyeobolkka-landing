@@ -1,0 +1,58 @@
+{{> authtop}}
+<style>
+  .hist .wrap { max-width:720px; }
+  .hist { padding:8px 0 56px; }
+  .hist h2 { font-size:20px; font-weight:800; }
+  .hist .top { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:14px; }
+  .hist .count { color:var(--muted); font-weight:700; }
+  .hist .btn.small { width:auto; margin-top:0; min-height:44px; padding:0 18px; font-size:16px; }
+  .btn.ghost { background:var(--surface); color:var(--primary); border:2px solid var(--primary); }
+  .rec-card { margin-top:18px; }
+  .rec-card .when { color:var(--muted); font-size:15px; font-weight:700; }
+  .rec-card dl { display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin-top:10px; }
+  .rec-card dt { font-weight:800; color:var(--muted); font-size:15px; }
+  .rec-card dd { margin:0; word-break:keep-all; }
+  .picks { list-style:none; display:grid; gap:10px; margin-top:16px; }
+  .pick { border:1px solid var(--line); border-radius:14px; padding:12px 16px; background:var(--bg); }
+  .pick h3 { font-size:17px; line-height:1.4; }
+  .pick .by { color:var(--muted); font-size:14px; }
+  .pick .why { margin-top:6px; font-size:16px; line-height:1.65; }
+  .badge { display:inline-block; margin-top:8px; padding:3px 10px; border-radius:999px; font-size:13px; font-weight:800; }
+  .badge.Y { background:#e6f6ec; color:#14532d; }
+  .badge.N { background:#fff4d6; color:#7a4b00; }
+  .badge.unknown { background:#eceef6; color:#3b4157; }
+  .note { margin-top:10px; color:var(--muted); font-size:14px; }
+  .rec-card .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  .rec-card .actions .btn { margin-top:0; flex:1; min-width:150px; }
+  #hmsg { margin-top:14px; padding:12px 14px; border-radius:12px; font-weight:700; display:none; }
+  #hmsg.ok { display:block; background:#e6f6ec; color:#14532d; }
+  #hmsg.err { display:block; background:#fdecec; color:#7f1d1d; }
+  .empty { margin-top:22px; text-align:center; }
+  .empty .btn { display:inline-flex; width:auto; padding:0 24px; margin-top:14px; }
+  [hidden] { display:none !important; }
+</style>
+<section class="hist"><div class="wrap">
+  <h1>{{hist.title}}</h1>
+  <p class="lead">{{hist.lead}}</p>
+  <p class="note">{{hist.availNote}}</p>
+  <div id="hmsg" role="status" aria-live="polite"></div>
+  <p id="hloading" class="note">{{hist.loading}}</p>
+  <div class="top" id="htop" hidden>
+    <span class="count" id="hcount"></span>
+    <button class="btn ghost small" id="hdelall" type="button">{{hist.deleteAll}}</button>
+  </div>
+  <div id="hlist"></div>
+  <div class="card empty" id="hempty" hidden>
+    <p>{{hist.empty}}</p>
+    <a class="btn" href="{{$recommend}}">{{hist.goRecommend}}</a>
+  </div>
+  <p class="links"><a href="{{$recommend}}">{{hist.toRecommend}}</a> · <a href="{{$account}}">{{hist.toAccount}}</a></p>
+</div></section>
+<script>
+  window.HIST_T = { t: {{hist|json}}, age: {{rec.age|json}}, gender: {{rec.gender|json}}, genre: {{rec.genre|json}}, result: {{rec.result|json}} };
+  window.HIST_LANG = {{$lang|json}};
+  window.HIST_RECOMMEND = {{$recommend|json}};
+  window.HIST_LOGIN = {{$login|json}};
+</script>
+<script src="/history.js" defer></script>
+{{> authbottom}}

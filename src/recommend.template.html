@@ -119,6 +119,8 @@
     </fieldset>
     <label class="check"><input type="checkbox" id="save-prefs"><span>{{rec.prefs.save}}</span></label>
     <p class="hint">{{rec.prefs.saveHint}}</p>
+    <label class="check"><input type="checkbox" id="save-history" checked><span>{{rec.history.save}}</span></label>
+    <p class="hint">{{rec.history.saveHint}}</p>
     <div class="actions">
       <button class="btn ghost" id="to-region" type="button">{{rec.taste.back}}</button>
       <button class="btn" id="submit" type="button">{{rec.taste.submit}}</button>
@@ -136,6 +138,7 @@
     <h2 id="result-title" tabindex="-1"></h2>
     <ol class="picks" id="picks"></ol>
     <p class="notice">{{rec.result.notice}}<br>{{rec.result.ai}}</p>
+    <p class="hint" id="history-note" hidden><a href="{{$history}}">{{rec.history.link}}</a></p>
     <div class="actions">
       <button class="btn ghost" id="to-taste2" type="button">{{rec.result.again}}</button>
       <button class="btn" id="restart" type="button">{{rec.result.restart}}</button>

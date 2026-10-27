@@ -34,6 +34,10 @@
     "recommend": {
       "title": "AI book picks – Billyeobolkka",
       "description": "AI picks books you'll like from what your chosen library actually has on its shelves."
+    },
+    "history": {
+      "title": "My picks history – Billyeobolkka",
+      "description": "Look back at the AI book picks you've received."
     }
   },
   "nav": {
@@ -363,7 +367,17 @@
       "saveHint": "Your library, age group, gender, favorite genres and liked books are saved. They're saved when you get picks, and you can delete them anytime on your account page.",
       "saved": "Your settings were saved.",
       "saveFail": "Your picks are ready, but we couldn't save your settings. Please try again in a moment.",
-      "libGone": "Your saved library is no longer on the list. Please choose a library again."
+      "libGone": "Your saved library is no longer on the list. Please choose a library again.",
+      "saveLimit": "Your picks are ready. You've used all of today's book lookups, so your settings couldn't be saved. Please try again tomorrow."
+    },
+    "history": {
+      "save": "Keep these picks in my history",
+      "saveHint": "The picks and your choices are saved to your account (latest 30). You can delete them anytime on the history page.",
+      "saved": "These picks were added to your history.",
+      "saveFail": "Your picks are ready, but they couldn't be saved to your history.",
+      "link": "View my picks history",
+      "fromLoaded": "Loaded the choices from a past pick. Check them and press \"Get picks\". (This uses one pick today.)",
+      "fromFail": "Couldn't load that past pick. Please choose your options again."
     }
   },
   "prefs": {
@@ -382,5 +396,34 @@
     "deleted": "Your saved settings were deleted.",
     "failed": "Something went wrong. Please try again in a moment.",
     "loadFail": "Couldn't load your saved settings."
+  },
+  "hist": {
+    "title": "My picks history",
+    "lead": "Look back at the AI picks you received. The latest 30 are kept.",
+    "empty": "No history yet. Your picks will show up here once you get some.",
+    "goRecommend": "Get book picks",
+    "loading": "Loading...",
+    "loadFail": "Couldn't load your history. Please try again in a moment.",
+    "library": "Library",
+    "libGone": "Library no longer listed",
+    "age": "Age group",
+    "gender": "Gender",
+    "genres": "Favorite genres",
+    "liked": "Books you liked",
+    "none": "Not set",
+    "availNote": "Loan status is as of when the picks were made.",
+    "again": "Pick again with these choices",
+    "delete": "Delete this entry",
+    "deleteAll": "Delete all history",
+    "confirmOne": "Delete this history entry?",
+    "confirmAll": "Delete all your history? This can't be undone.",
+    "deleted": "History deleted.",
+    "failed": "Something went wrong. Please try again in a moment.",
+    "count": "{n} entries",
+    "toRecommend": "← Back to picks",
+    "toAccount": "Account",
+    "accountTitle": "My picks history",
+    "accountLead": "Look back at the picks you received.",
+    "accountOpen": "View picks history"
   }
 }

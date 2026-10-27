@@ -67,6 +67,7 @@ async function run(input) {
       const c = byIsbn.get(it.isbn13);
       return { isbn13: it.isbn13, title: c.title, author: c.author, reason: it.reason, available: avail[i] };
     }),
+    liked: likedBooks.map((b) => ({ isbn13: b.isbn13, title: b.title, author: b.author })),
     meta: { pool: candidates.length, relaxed, hints: hints.length, usage },
   };
 }

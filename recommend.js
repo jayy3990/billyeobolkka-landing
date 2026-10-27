@@ -188,16 +188,22 @@
     $('step-loading').scrollIntoView({ block: 'center' });
     post('/api/recommend', {
       lang: LANG, libCode: state.lib.c, ageGroup: $('age').value, gender: $('gender').value,
-      genres: state.genres.slice(), liked: state.liked.map(function (b) { return b.isbn13; })
+      genres: state.genres.slice(), liked: state.liked.map(function (b) { return b.isbn13; }),
+      saveHistory: $('save-history').checked
     }).then(function (r) {
       if (r.status === 401) { go('taste', false); return authFail(); }
       var d = r.data || {};
-      if (d.ok && d.items && d.items.length) { if (typeof d.remaining === 'number') showRemaining(d.remaining); renderPicks(d.items); go('result'); savePrefs(); return; }
+      if (d.ok && d.items && d.items.length) { if (typeof d.remaining === 'number') showRemaining(d.remaining); renderPicks(d.items); go('result'); showHistoryNote(d.historySaved); savePrefs(); return; }
       go('taste', false);
       if (d.error === 'limit') showRemaining(0);
       say('err', err(d.error || 'server'));
     }).catch(function () { go('taste', false); say('err', err('net')); })
       .then(function () { state.busy = false; $('submit').disabled = false; });
+  }
+  // 결과 화면의 기록 안내: 저장됐으면 링크, 저장을 켰는데 실패했으면 알려 줘요 (추천 결과는 그대로)
+  function showHistoryNote(saved) {
+    $('history-note').hidden = !saved;
+    if (!saved && $('save-history').checked) say('err', T.history.saveFail);
   }
   function renderPicks(items) {
     $('result-title').textContent = fmt(T.result.title, { lib: state.lib.n });
@@ -245,6 +251,22 @@
     $('saved-banner').hidden = false;
     $('use-saved').hidden = !(lib && state.genres.length);
   }
+  // 추천 기록의 "이 조건으로 다시 추천" (?from=<기록 id>): 조건만 채우고 2단계로 보내요. 추천은 사용자가 직접 눌러요.
+  function loadFrom(id) {
+    return fetch('/api/history?id=' + encodeURIComponent(id), { credentials: 'same-origin', cache: 'no-store' })
+      .then(function (r) { return r.status === 200 ? r.json() : null; })
+      .then(function (d) {
+        if (!(d && d.ok && d.record && d.record.libCode)) { say('err', T.history.fromFail); return false; }
+        var rec = d.record;
+        applySaved({ libCode: rec.libCode, libName: rec.libName, ageGroup: rec.ageGroup, gender: rec.gender, genres: rec.genres, liked: rec.liked });
+        $('saved-banner').hidden = true; state.saved = null; $('save-prefs').checked = false;
+        if (!state.lib) { say('err', T.history.fromFail); return false; }
+        $('chosen-lib').textContent = T.region.selected + ': ' + state.lib.n;
+        go('taste', false); say('ok', T.history.fromLoaded);
+        return true;
+      })
+      .catch(function () { say('err', T.history.fromFail); return false; });
+  }
   function loadSaved() {
     return fetch('/api/preferences', { credentials: 'same-origin', cache: 'no-store' })
       .then(function (r) { return r.status === 200 ? r.json() : null; })
@@ -266,7 +288,10 @@
       method: 'PUT', credentials: 'same-origin', cache: 'no-store', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ libCode: state.lib.c, ageGroup: $('age').value, gender: $('gender').value, genres: state.genres.slice(), liked: state.liked.map(function (b) { return b.isbn13; }) })
     }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok && d && d.ok, d: d }; }); })
-      .then(function (r) { if (r.ok) { state.saved = r.d.prefs; say('ok', T.prefs.saved); } else say('err', T.prefs.saveFail); })
+      .then(function (r) {
+        if (r.ok) { state.saved = r.d.prefs; say('ok', T.prefs.saved); }
+        else say('err', r.d && r.d.error === 'limit' ? T.prefs.saveLimit : T.prefs.saveFail);
+      })
       .catch(function () { say('err', T.prefs.saveFail); });
   }
 
@@ -290,5 +315,10 @@
   $('use-saved').addEventListener('click', function () { if (state.lib && state.genres.length) submit(); });
 
   initTaste(); loadUsage(); go('region', false);
-  initRegion().then(function (d) { if (d !== null) loadSaved(); });
+  var fromId = (/[?&]from=([0-9a-fA-F-]{36})(?:&|$)/.exec(location.search) || [])[1];
+  initRegion().then(function (d) {
+    if (d === null) return;
+    if (fromId) { loadFrom(fromId).then(function (ok) { if (!ok) loadSaved(); }); return; }
+    loadSaved();
+  });
 })();

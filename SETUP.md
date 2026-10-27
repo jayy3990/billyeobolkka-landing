@@ -199,3 +199,35 @@ Vercel → 프로젝트 → **Settings → Environment Variables**에 추가한 
 - 연령대·성별은 개인정보예요. 사용자가 체크해서 동의한 경우에만 저장하고, 계정 페이지에서 언제든 지울 수 있어요.
 - 저장한 값은 추천할 때 Claude에게 가는 입력(허용된 값을 정해진 라벨로 바꾼 것)에만 쓰여요. 로그나 정보나루 요청에 사용자 정보는 남기지 않아요.
 - 영리 서비스를 시작하기 전에 개인정보 처리방침·이용약관에 "추천 설정(연령대·성별 등) 저장"을 반영하세요(아직 사이트에 방침 페이지가 없어요).
+
+
+# 추천 기록
+
+추천을 받으면 결과(책 목록·추천 이유·당시 대출 상태)와 고른 조건을 내 계정에 남기고, 나중에 `/history`(`/en/history`)에서 다시 볼 수 있어요.
+
+## 어떻게 동작하나요
+- **저장**: 추천 화면 취향 단계의 "추천 결과를 내 기록에 남기기"(기본 체크). 추천이 성공한 뒤에만 저장하고, 저장이 실패해도 추천 결과는 그대로 보여요(응답의 `historySaved`로 알려요). 체크를 끄면 저장하지 않아요.
+- **보관**: 사용자당 최근 30개. 31번째가 생기면 가장 오래된 기록이 지워져요.
+- **보기·삭제**: `/history`에서 목록 보기, 한 건 삭제, 전체 삭제. 대출 상태는 "추천받은 당시" 값이에요(다시 조회하지 않아요). 계정 페이지와 추천 결과 화면에서 링크로 와요.
+- **이 조건으로 다시 추천**: `/recommend?from=<기록 id>`로 이동해 조건만 채우고 2단계에서 멈춰요. 추천은 사용자가 직접 눌러야 시작돼요(하루 5회 보호).
+- **서버**: `api/history.js`(GET 목록/한 건, DELETE 한 건/전체), `api/_lib/history.js`. Origin 확인 → 로그인(`getUser`) → 본인 행만(`user_id` 조건 + RLS). 기록 id는 UUID 형식만 받아요. 저장 글자는 서버가 가진 값(정보나루 공식 제목·저자 + 검증을 통과한 AI 추천 이유)이고 길이를 제한해요.
+- **DB(`recommendation_history`)**: RLS로 본인 행만 읽기·추가·삭제, 수정(UPDATE) 권한은 없어요. 값 범위는 CHECK로도 막아요. 계정이 삭제되면 같이 지워져요. `service_role` 키는 쓰지 않아요. 함수는 8개 → 9개(Vercel Hobby 한도 12).
+
+## 내가 직접 해야 하는 설정
+- [ ] **Supabase SQL**: SQL Editor에서 `supabase/migrations/20261027000000_recommendation_history.sql` 전체를 붙여 넣고 Run → `Success. No rows returned`가 나오면 정상이에요. (환경변수는 새로 필요 없어요)
+  - 확인 1: `select relname, relrowsecurity, relforcerowsecurity from pg_class where relname = 'recommendation_history';` → 둘 다 **true**
+  - 확인 2: `select policyname, cmd from pg_policies where tablename = 'recommendation_history' order by cmd;` → `DELETE`, `INSERT`, `SELECT` 정책 3개 (UPDATE 없음)
+  - 확인 3: `select grantee, privilege_type from information_schema.role_table_grants where table_name = 'recommendation_history' and grantee = 'anon';` → **결과 없음**
+- [ ] 위 SQL을 실행한 **뒤에** 배포해요(표가 없으면 기록이 저장되지 않고 `/history`가 "불러오지 못했어요"로 나와요. 추천 자체는 그대로 돼요).
+
+## 시나리오 시험 (배포 후)
+1. `/recommend` → 추천 받기(기록 체크 켠 채) → 결과 아래 "내 추천 기록 보기" 링크.
+2. `/history` → 방금 추천이 맨 위에 있고 도서관·조건·책·이유·대출 상태가 보여요.
+3. "이 조건으로 다시 추천" → 조건이 채워진 2단계 화면(자동으로 추천되지 않아요).
+4. 기록 체크를 끄고 추천 → `/history`에 새 기록이 늘지 않아요.
+5. 한 건 삭제(확인창) / 전체 삭제 → 목록이 줄어요.
+6. 다른 계정으로 로그인하면 내 기록이 보이지 않아야 해요. 로그아웃 상태로 `/history`를 열면 로그인 화면으로 가요.
+7. 영어: `/en/history`에서 같은 흐름.
+
+## 개인정보 메모
+- 연령대·성별과 추천 내용은 개인 취향 정보예요. 사용자가 체크를 끄면 저장하지 않고, 언제든 지울 수 있어요. 영리 서비스 전에 개인정보 처리방침에 "추천 기록 저장"을 반영하세요.

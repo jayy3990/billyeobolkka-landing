@@ -32,7 +32,7 @@ function validateInput(body, isKnownLibrary) {
     if (!b.liked.every((i) => typeof i === "string" && ISBN13.test(i))) return { ok: false, error: "liked" };
     liked = [...new Set(b.liked)];
   }
-  return { ok: true, value: { lang, libCode: b.libCode, ageGroup: b.ageGroup, gender: b.gender, genres, liked } };
+  return { ok: true, value: { lang, libCode: b.libCode, ageGroup: b.ageGroup, gender: b.gender, genres, liked, saveHistory: b.saveHistory !== false } };
 }
 
 // 저장할 선호 설정 검증: 추천 입력과 같은 허용 목록을 써요. 도서관·장르·좋아한 책은 비어 있어도 돼요.
