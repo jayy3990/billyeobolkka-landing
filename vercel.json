@@ -51,6 +51,14 @@
     {
       "source": "/en/history",
       "destination": "/api/page?name=history&lang=en"
+    },
+    {
+      "source": "/library",
+      "destination": "/api/page?name=library&lang=ko"
+    },
+    {
+      "source": "/en/library",
+      "destination": "/api/page?name=library&lang=en"
     }
   ],
   "headers": [
@@ -88,7 +96,7 @@
       ]
     },
     {
-      "source": "/(account|en/account|recommend|en/recommend|history|en/history|reset-password|en/reset-password|auth/confirm|login|en/login|signup|en/signup|forgot-password|en/forgot-password)",
+      "source": "/(account|en/account|recommend|en/recommend|history|en/history|library|en/library|reset-password|en/reset-password|auth/confirm|login|en/login|signup|en/signup|forgot-password|en/forgot-password)",
       "headers": [
         {
           "key": "Cache-Control",

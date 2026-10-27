@@ -33,19 +33,19 @@ function buildRow(uid, input, out) {
   };
 }
 
-// 저장 + 오래된 기록 정리. 성공하면 true, 실패하면 false (예외를 밖으로 내보내지 않아요)
+// 저장 + 오래된 기록 정리. 성공하면 새 기록의 id(UUID), 실패하면 null (예외를 밖으로 내보내지 않아요)
 async function save(supabase, uid, input, out) {
   try {
-    const ins = await supabase.from(TABLE).insert(buildRow(uid, input, out));
-    if (ins.error) { console.error("history 저장 실패", ins.error.code); return false; }
+    const ins = await supabase.from(TABLE).insert(buildRow(uid, input, out)).select("id").maybeSingle();
+    if (ins.error) { console.error("history 저장 실패", ins.error.code); return null; }
     // 최근 KEEP건만 남기고 나머지는 지워요 (본인 행만: 조회·삭제 모두 user_id 조건 + RLS)
     const old = await supabase.from(TABLE).select("id").eq("user_id", uid).order("created_at", { ascending: false }).range(KEEP, KEEP + 99);
     const ids = ((old && old.data) || []).map((r) => r.id).filter(isUuid);
     if (ids.length) await supabase.from(TABLE).delete().eq("user_id", uid).in("id", ids);
-    return true;
+    return ins.data && isUuid(ins.data.id) ? ins.data.id : null;
   } catch (e) {
     console.error("history 오류", e && e.message);
-    return false;
+    return null;
   }
 }
 

@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const A = require("./_lib/auth");
 
-const PAGES = ["account", "reset-password", "recommend", "history"];
+const PAGES = ["account", "reset-password", "recommend", "history", "library"];
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
 module.exports = async (req, res) => {

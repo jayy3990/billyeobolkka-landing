@@ -1,0 +1,60 @@
+{{> authtop}}
+<style>
+  .shelf .wrap { max-width:720px; }
+  .shelf { padding:8px 0 56px; }
+  .shelf h2 { font-size:20px; font-weight:800; }
+  .shelf .count { margin-top:14px; display:inline-block; padding:4px 14px; border-radius:999px; background:var(--soft); color:var(--primary); font-weight:800; font-size:15px; }
+  .hint { margin-top:6px; color:var(--muted); font-size:15px; }
+  .searchrow { display:flex; gap:8px; margin-top:10px; }
+  .searchrow input { margin-top:0; flex:1; min-width:0; }
+  .searchrow .btn { width:auto; margin-top:0; padding:0 20px; min-height:52px; font-size:17px; }
+  .results { list-style:none; margin-top:10px; display:grid; gap:8px; }
+  .results li { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:var(--bg); }
+  .results li span { min-width:0; }
+  .results li b { display:block; font-size:16px; }
+  .results li small { color:var(--muted); }
+  .mini { flex:none; min-height:40px; padding:0 14px; border-radius:10px; border:2px solid var(--primary); background:var(--surface); color:var(--primary); font:inherit; font-weight:800; cursor:pointer; }
+  .mini:disabled { opacity:.5; cursor:default; }
+  .books { list-style:none; display:grid; gap:12px; margin-top:14px; }
+  .book { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px 18px; }
+  .book h3 { font-size:18px; line-height:1.4; }
+  .book .by { color:var(--muted); font-size:15px; }
+  .book .rate { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:10px; }
+  .book .rate > span { font-size:14px; color:var(--muted); font-weight:700; }
+  .chip { min-height:40px; padding:6px 14px; border-radius:999px; border:2px solid var(--line); background:var(--surface); color:var(--text); font:inherit; font-size:15px; font-weight:700; cursor:pointer; }
+  .chip[aria-pressed="true"] { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .book .remove { margin-top:10px; background:none; border:0; padding:6px 0; color:var(--muted); font:inherit; font-size:14px; text-decoration:underline; cursor:pointer; }
+  #smsg { margin-top:14px; padding:12px 14px; border-radius:12px; font-weight:700; display:none; }
+  #smsg.ok { display:block; background:#e6f6ec; color:#14532d; }
+  #smsg.err { display:block; background:#fdecec; color:#7f1d1d; }
+  .note { margin-top:10px; color:var(--muted); font-size:14px; }
+  [hidden] { display:none !important; }
+  @media (max-width:560px) { .searchrow { flex-direction:column; } .searchrow .btn { width:100%; } }
+</style>
+<section class="shelf"><div class="wrap">
+  <h1>{{shelf.title}}</h1>
+  <p class="lead">{{shelf.lead}}</p>
+  <span class="count" id="scount" hidden></span>
+  <div id="smsg" role="status" aria-live="polite"></div>
+
+  <div class="card">
+    <h2>{{shelf.searchTitle}}</h2>
+    <p class="hint">{{shelf.searchHint}}</p>
+    <div class="searchrow">
+      <input id="q" type="text" maxlength="40" autocomplete="off" aria-label="{{shelf.search|attr}}" placeholder="{{shelf.search|attr}}">
+      <button class="btn" id="qbtn" type="button">{{shelf.searchBtn}}</button>
+    </div>
+    <ul class="results" id="results"></ul>
+  </div>
+
+  <p id="sloading" class="note">{{shelf.loading}}</p>
+  <ol class="books" id="books"></ol>
+  <div class="card" id="sempty" hidden><p>{{shelf.empty}}</p></div>
+  <p class="links"><a href="{{$recommend}}">{{shelf.toRecommend}}</a> · <a href="{{$account}}">{{shelf.toAccount}}</a></p>
+</div></section>
+<script>
+  window.SHELF_T = { t: {{shelf|json}} };
+  window.SHELF_LOGIN = {{$login|json}};
+</script>
+<script src="/library.js" defer></script>
+{{> authbottom}}

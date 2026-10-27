@@ -62,13 +62,18 @@ function makeStore(initial = []) {
     return api;
   };
   store.table = {
-    insert: async (row) => {
-      store.log.push(["insert", row]);
-      if (store.failInsert) return { error: { code: "XX" } };
-      store.seq++;
-      store.rows.push({ id: uuid(store.seq), created_at: new Date(Date.UTC(2026, 9, 27, 0, 0, store.seq % 3600)).toISOString(), ...row });
-      return { error: null };
-    },
+    insert: (row) => ({
+      select: () => ({
+        maybeSingle: async () => {
+          store.log.push(["insert", row]);
+          if (store.failInsert) return { data: null, error: { code: "XX" } };
+          store.seq++;
+          const saved = { id: uuid(store.seq), created_at: new Date(Date.UTC(2026, 9, 27, 0, 0, store.seq % 3600)).toISOString(), ...row };
+          store.rows.push(saved);
+          return { data: { id: saved.id }, error: null };
+        },
+      }),
+    }),
     select: () => query("select"),
     delete: () => query("delete"),
   };
@@ -118,7 +123,7 @@ test("save: 저장하고 최근 30건만 남겨요 (다른 사람 기록은 그�
   const others = Array.from({ length: 5 }, (_, i) => row(500 + i, "u2"));
   const store = makeStore([...mine, ...others]);
   const sb = fakeSupabase(store);
-  assert.equal(await history.save(sb, "u1", input, out), true);
+  assert.equal(await history.save(sb, "u1", input, out), uuid(1001), "새 기록의 id를 돌려줘요");
   const myRows = store.rows.filter((r) => r.user_id === "u1");
   assert.equal(myRows.length, 30, "내 기록은 30건");
   assert.equal(store.rows.filter((r) => r.user_id === "u2").length, 5, "다른 사람 기록은 안 건드려요");
@@ -127,10 +132,10 @@ test("save: 저장하고 최근 30건만 남겨요 (다른 사람 기록은 그�
   assert.equal(store.log.find((l) => l[0] === "insert")[1].user_id, "u1");
 });
 
-test("save: DB 저장이 실패하면 false (예외를 밖으로 내보내지 않아요)", async () => {
+test("save: DB 저장이 실패하면 null (예외를 밖으로 내보내지 않아요)", async () => {
   const store = makeStore(); store.failInsert = true;
   const errLog = console.error; console.error = () => {};
-  try { assert.equal(await history.save(fakeSupabase(store), "u1", input, out), false); } finally { console.error = errLog; }
+  try { assert.equal(await history.save(fakeSupabase(store), "u1", input, out), null); } finally { console.error = errLog; }
 });
 
 // ═══ 추천 → 기록 연결 ═══
@@ -155,6 +160,7 @@ test("POST /api/recommend: 성공하면 기록을 남기고(historySaved), 끄�
   let res = makeRes(); await recommendHandler(recReq(recBody), res);
   assert.equal(res.code, 200);
   assert.equal(json(res).historySaved, true);
+  assert.equal(json(res).historyId, store.rows[0].id, "기록 id를 화면에 알려 줘요 (서재에 담을 때 써요)");
   assert.equal(store.rows.length, 1);
   const saved = store.rows[0];
   assert.equal(saved.user_id, "u1");

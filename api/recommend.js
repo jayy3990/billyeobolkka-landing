@@ -6,6 +6,7 @@ const libs = require("./_lib/libs");
 const core = require("./_lib/recommend-core");
 const pipeline = require("./_lib/recommend-pipeline");
 const history = require("./_lib/history");
+const shelfLib = require("./_lib/shelf");
 const { LibraryError } = require("./_lib/library");
 const { ClaudeError } = require("./_lib/claude");
 
@@ -35,10 +36,12 @@ module.exports = async (req, res) => {
     if (!r.allowed) return A.send(res, 429, { ok: false, error: "limit", remaining: 0 });
     eventId = r.eventId;
 
-    const out = await pipeline.run(v.value);
+    // 내 서재(읽은 책)가 있으면 추천에서 빼고 취향에 반영해요. 서재를 못 읽어도 추천은 계속해요
+    const shelf = await shelfLib.load(supabase, uid);
+    const out = await pipeline.run({ ...v.value, shelf });
     // 추천 기록 저장 (사용자가 끄지 않았을 때만). 저장이 실패해도 추천 결과는 그대로 보여 줘요
-    const historySaved = v.value.saveHistory ? await history.save(supabase, uid, v.value, out) : false;
-    return A.send(res, 200, { ok: true, items: out.items, remaining: r.remaining, historySaved });
+    const historyId = v.value.saveHistory ? await history.save(supabase, uid, v.value, out) : null;
+    return A.send(res, 200, { ok: true, items: out.items, remaining: r.remaining, historySaved: !!historyId, historyId, shelfCount: shelf.length });
   } catch (e) {
     // 추천이 만들어지지 못했으면 오늘 횟수를 되돌려 줘요 (되돌리기도 실패하면 그냥 둬요)
     if (eventId && supabase) { try { await supabase.rpc("refund_usage", { p_event: eventId }); } catch (x) { /* 무시 */ } }

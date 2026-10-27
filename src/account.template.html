@@ -36,6 +36,11 @@
     <div id="prefs-msg" role="status" aria-live="polite"></div>
   </div>
   <div class="card prefs">
+    <h2>{{shelf.accountTitle}}</h2>
+    <p class="hint">{{shelf.accountLead}}</p>
+    <div class="actions"><a class="btn ghost" href="{{$shelf}}">{{shelf.accountOpen}}</a></div>
+  </div>
+  <div class="card prefs">
     <h2>{{hist.accountTitle}}</h2>
     <p class="hint">{{hist.accountLead}}</p>
     <div class="actions"><a class="btn ghost" href="{{$history}}">{{hist.accountOpen}}</a></div>

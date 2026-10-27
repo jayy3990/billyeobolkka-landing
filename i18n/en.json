@@ -38,6 +38,10 @@
     "history": {
       "title": "My picks history – Billyeobolkka",
       "description": "Look back at the AI book picks you've received."
+    },
+    "library": {
+      "title": "My bookshelf – Billyeobolkka",
+      "description": "Keep the books you've read so future picks skip them and match your taste better."
     }
   },
   "nav": {
@@ -378,6 +382,15 @@
       "link": "View my picks history",
       "fromLoaded": "Loaded the choices from a past pick. Check them and press \"Get picks\". (This uses one pick today.)",
       "fromFail": "Couldn't load that past pick. Please choose your options again."
+    },
+    "shelf": {
+      "note": "Using {n} books from your bookshelf: books you've read are left out, and they shape your picks.",
+      "link": "View my bookshelf",
+      "read": "I read this",
+      "done": "Added to shelf",
+      "fail": "Couldn't add it to your bookshelf. Please try again in a moment.",
+      "full": "Your bookshelf is full. Remove some books on the bookshelf page and try again.",
+      "limit": "You've used today's book searches, so it couldn't be added. Please try again tomorrow."
     }
   },
   "prefs": {
@@ -425,5 +438,41 @@
     "accountTitle": "My picks history",
     "accountLead": "Look back at the picks you received.",
     "accountOpen": "View picks history"
+  },
+  "shelf": {
+    "title": "My bookshelf",
+    "lead": "Keep the books you've read. Future picks will skip them and match your taste in more detail.",
+    "count": "{n} / {max} books",
+    "empty": "No books yet. Press \"I read this\" on a pick, or search below to add books.",
+    "loading": "Loading...",
+    "loadFail": "Couldn't load your bookshelf. Please try again in a moment.",
+    "failed": "Something went wrong. Please try again in a moment.",
+    "searchTitle": "Search and add books you've read",
+    "searchHint": "Find a book by title and add it with \"I read this\". Searches have a daily limit.",
+    "search": "Book title",
+    "searchBtn": "Search",
+    "searching": "Searching...",
+    "noResults": "No results.",
+    "add": "I read this",
+    "added": "Added",
+    "addedMsg": "Added to your bookshelf.",
+    "rate": "How was it?",
+    "rating": {
+      "liked": "Loved it",
+      "ok": "It was okay",
+      "disliked": "Not for me"
+    },
+    "remove": "Remove from shelf",
+    "confirmRemove": "Remove this book from your bookshelf?",
+    "removed": "Removed from your bookshelf.",
+    "full": "Your bookshelf is full (max {max}). Remove some books and try again.",
+    "limit": "You've used today's book searches. Please try again tomorrow.",
+    "query": "Please check your search. (Up to 40 characters; letters, numbers and basic symbols only)",
+    "net": "Network problem. Please try again in a moment.",
+    "toRecommend": "← Back to picks",
+    "toAccount": "Account",
+    "accountTitle": "My bookshelf",
+    "accountLead": "The more you keep here, the better your picks get.",
+    "accountOpen": "View my bookshelf"
   }
 }

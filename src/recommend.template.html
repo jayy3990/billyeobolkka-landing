@@ -60,6 +60,8 @@
   .notice { margin-top:18px; padding:14px 16px; border-radius:12px; background:var(--soft); color:var(--text); font-size:15px; line-height:1.6; }
   .check { display:flex; gap:10px; align-items:flex-start; margin-top:20px; font-weight:700; cursor:pointer; }
   .check input { flex:none; width:22px; height:22px; margin-top:3px; accent-color:var(--primary); }
+  .pick .readbtn { margin-top:12px; margin-left:8px; min-height:34px; padding:0 14px; border-radius:999px; border:2px solid var(--primary); background:var(--surface); color:var(--primary); font:inherit; font-size:14px; font-weight:800; cursor:pointer; }
+  .pick .readbtn:disabled { opacity:.6; cursor:default; }
   #saved-banner { margin:0 0 16px; }
   #saved-banner .actions { margin-top:12px; }
   #result-title { margin-top:22px; }
@@ -117,6 +119,7 @@
       <ul class="results" id="results"></ul>
       <ul class="picked" id="picked" aria-live="polite"></ul>
     </fieldset>
+    <p class="notice" id="shelf-note" hidden><span id="shelf-note-text"></span> <a href="{{$shelf}}">{{rec.shelf.link}}</a></p>
     <label class="check"><input type="checkbox" id="save-prefs"><span>{{rec.prefs.save}}</span></label>
     <p class="hint">{{rec.prefs.saveHint}}</p>
     <label class="check"><input type="checkbox" id="save-history" checked><span>{{rec.history.save}}</span></label>

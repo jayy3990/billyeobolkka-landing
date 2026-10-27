@@ -31,6 +31,7 @@ const PAGES = [
   { name: "reset-password", path: "reset-password", noindex: true, dynamic: true },
   { name: "recommend", path: "recommend", noindex: true, dynamic: true },
   { name: "history", path: "history", noindex: true, dynamic: true },
+  { name: "library", path: "library", noindex: true, dynamic: true },
 ];
 const pageByName = (n) => PAGES.find((p) => p.name === n);
 
@@ -112,6 +113,7 @@ function render(tpl, lang, page) {
     account: pageUrl(lang, pageByName("account")),
     recommend: pageUrl(lang, pageByName("recommend")),
     history: pageUrl(lang, pageByName("history")),
+    shelf: pageUrl(lang, pageByName("library")),
     cur_ko: lang.code === "ko" ? 'aria-current="true"' : "",
     cur_en: lang.code === "en" ? 'aria-current="true"' : "",
   };

@@ -6,6 +6,7 @@
 const library = require("./library");
 const claude = require("./claude");
 const core = require("./recommend-core");
+const shelfLib = require("./shelf");
 const { AGE_GROUPS, GENDERS, LIMITS, ADULT_ADD_CODES } = require("./recommend-config");
 
 const deps = { library, claude };
@@ -19,7 +20,10 @@ async function run(input) {
   const likedBooks = (await Promise.all(input.liked.map((i) => lib.getBook(i).catch(() => null)))).filter(Boolean);
 
   // 2) 취향 단서: 함께 많이 읽힌 책 (실패해도 계속 — 후보가 아니라 힌트예요)
-  const hints = likedBooks.length ? await lib.maniaRecs(likedBooks.map((b) => b.isbn13)).catch(() => []) : [];
+  //    기준 책은 이번에 고른 책 + (모자라면) 내 서재에서 재밌게 읽은 최근 책, 합쳐서 최대 3권 (정보나루 호출 수는 그대로)
+  const shelf = Array.isArray(input.shelf) ? input.shelf : [];
+  const seeds = shelfLib.seedIsbns(likedBooks.map((b) => b.isbn13), shelf);
+  const hints = seeds.length ? await lib.maniaRecs(seeds).catch(() => []) : [];
 
   // 3) 이 도서관 후보: 같은 성별·연령의 인기대출(소장 보장) + 최근 입수(신간 보강)
   const { kdcs } = core.bucketsFor(input.genres);
@@ -27,13 +31,13 @@ async function run(input) {
   let popular = (await fetchPop(gender, age)).flat();
   const recent = (await Promise.all(kdcs.map((kdc) => lib.recent({ libCode: input.libCode, kdc }).catch(() => [])))).flat();
 
-  let candidates = core.assembleCandidates({ popular, recent, genres: input.genres, liked: likedBooks });
+  let candidates = core.assembleCandidates({ popular, recent, genres: input.genres, liked: likedBooks, exclude: shelf });
   let relaxed = false;
   if (candidates.length < LIMITS.minPool && (gender || age)) {
     // 조건이 너무 좁아서 후보가 적으면, 성별·연령 조건을 풀어서 이 도서관 전체 인기로 보강해요
     relaxed = true;
     const wide = (await fetchPop(null, null)).flat();
-    candidates = core.assembleCandidates({ popular: [...popular, ...wide], recent, genres: input.genres, liked: likedBooks });
+    candidates = core.assembleCandidates({ popular: [...popular, ...wide], recent, genres: input.genres, liked: likedBooks, exclude: shelf });
   }
   if (candidates.length < 5) throw new core.PipelineError("few");
 
@@ -41,7 +45,7 @@ async function run(input) {
   const byIsbn = new Map(candidates.map((c) => [c.isbn13, c]));
   const prompt = core.buildPrompt({
     lang: input.lang, ageGroup: input.ageGroup, gender: input.gender, genres: input.genres,
-    liked: likedBooks, hints, candidates,
+    liked: likedBooks, hints, candidates, shelf: shelfLib.summarize(shelf),
   });
   let items = null;
   let usage = { input: 0, output: 0 };
@@ -68,7 +72,7 @@ async function run(input) {
       return { isbn13: it.isbn13, title: c.title, author: c.author, reason: it.reason, available: avail[i] };
     }),
     liked: likedBooks.map((b) => ({ isbn13: b.isbn13, title: b.title, author: b.author })),
-    meta: { pool: candidates.length, relaxed, hints: hints.length, usage },
+    meta: { pool: candidates.length, relaxed, hints: hints.length, shelf: shelf.length, usage },
   };
 }
 

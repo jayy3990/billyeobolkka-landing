@@ -12,7 +12,8 @@
   function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
   function say(kind, text) { var m = $('hmsg'); m.className = kind || ''; m.textContent = text || ''; }
 
-  var records = [];
+  var S = window.HIST_SHELF || {};
+  var records = [], onShelf = {};
   var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   function when(iso) {
@@ -22,6 +23,22 @@
     catch (e) { return d.toLocaleString(); }
   }
   function row(dl, label, value) { dl.appendChild(el('dt', '', label)); dl.appendChild(el('dd', '', value)); }
+
+  // "읽었어요": 이 기록의 책을 내 서재에 담아요 (제목·저자는 서버가 이 기록에서 가져와요)
+  function readButton(recordId, isbn) {
+    var b = el('button', 'readbtn', onShelf[isbn] ? S.done : S.read); b.type = 'button'; b.disabled = !!onShelf[isbn];
+    b.addEventListener('click', function () {
+      b.disabled = true; say('', '');
+      fetch('/api/library', { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isbn13: isbn, historyId: recordId }) })
+        .then(function (r) { return r.json().catch(function () { return { ok: false }; }).then(function (d) { return { status: r.status, data: d }; }); })
+        .then(function (r) {
+          if (r.status === 401) return authFail();
+          if (r.data && r.data.ok) { onShelf[isbn] = true; b.textContent = S.done; }
+          else { b.disabled = false; say('err', r.data && r.data.error === 'full' ? S.full : S.fail); }
+        }).catch(function () { b.disabled = false; say('err', S.fail); });
+    });
+    return b;
+  }
 
   function card(r) {
     var c = el('article', 'card rec-card');
@@ -43,6 +60,7 @@
       if (it.reason) li.appendChild(el('p', 'why', it.reason));
       var key = it.available === 'Y' ? 'Y' : it.available === 'N' ? 'N' : 'unknown';
       li.appendChild(el('span', 'badge ' + key, (H.result && H.result[key]) || ''));
+      li.appendChild(readButton(r.id, it.isbn13));
       ol.appendChild(li);
     });
     c.appendChild(ol);
@@ -94,9 +112,14 @@
     }).catch(function () { say('err', T.failed); }).then(function () { btn.disabled = false; });
   });
 
+  // 이미 서재에 있는 책은 "서재에 담았어요"로 보여 주려고 서재도 같이 읽어요 (실패해도 기록은 보여요)
+  var shelfLoad = fetch('/api/library', { credentials: 'same-origin', cache: 'no-store' })
+    .then(function (r) { return r.status === 200 ? r.json() : null; })
+    .then(function (d) { if (d && d.ok) (d.books || []).forEach(function (b) { onShelf[b.isbn13] = true; }); })
+    .catch(function () {});
   api('GET').then(function (r) {
     if (r.status === 401) return authFail();
-    if (r.data && r.data.ok) { records = r.data.records || []; render(); }
-    else { $('hloading').hidden = true; say('err', T.loadFail); }
+    if (r.data && r.data.ok) { records = r.data.records || []; return shelfLoad.then(render); }
+    $('hloading').hidden = true; say('err', T.loadFail);
   }).catch(function () { $('hloading').hidden = true; say('err', T.loadFail); });
 })();

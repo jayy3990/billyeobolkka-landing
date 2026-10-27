@@ -9,7 +9,7 @@
   var T = window.REC_T || {}, LANG = window.REC_LANG || 'ko';
   var MAX_GENRES = 3, MAX_LIKED = 3, MAX_REMAIN = 5;
   var $ = function (id) { return document.getElementById(id); };
-  var state = { data: null, sido: '', gu: '', lib: null, genres: [], liked: [], busy: false, saved: null };
+  var state = { shelfCount: 0, historyId: null, onShelf: {}, data: null, sido: '', gu: '', lib: null, genres: [], liked: [], busy: false, saved: null };
 
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o && o[k] != null ? o[k] : m; }); }
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
@@ -193,7 +193,7 @@
     }).then(function (r) {
       if (r.status === 401) { go('taste', false); return authFail(); }
       var d = r.data || {};
-      if (d.ok && d.items && d.items.length) { if (typeof d.remaining === 'number') showRemaining(d.remaining); renderPicks(d.items); go('result'); showHistoryNote(d.historySaved); savePrefs(); return; }
+      if (d.ok && d.items && d.items.length) { if (typeof d.remaining === 'number') showRemaining(d.remaining); state.historyId = d.historyId || null; if (typeof d.shelfCount === 'number') showShelfNote(d.shelfCount); renderPicks(d.items); go('result'); showHistoryNote(d.historySaved); savePrefs(); return; }
       go('taste', false);
       if (d.error === 'limit') showRemaining(0);
       say('err', err(d.error || 'server'));
@@ -205,6 +205,32 @@
     $('history-note').hidden = !saved;
     if (!saved && $('save-history').checked) say('err', T.history.saveFail);
   }
+  // "읽었어요": 추천받은 책을 내 서재에 담아요. 기록이 저장돼 있으면 기록 id로(정보나루·검색 횟수 없이), 아니면 ISBN만 보내요.
+  function readButton(it) {
+    var done = !!state.onShelf[it.isbn13];
+    var b = el('button', 'readbtn', done ? T.shelf.done : T.shelf.read); b.type = 'button'; b.disabled = done;
+    b.addEventListener('click', function () {
+      b.disabled = true; say('', '');
+      var body = { isbn13: it.isbn13 }; if (state.historyId) body.historyId = state.historyId;
+      post('/api/library', body).then(function (r) {
+        if (r.status === 401) return authFail();
+        if (r.data && r.data.ok) { state.onShelf[it.isbn13] = true; b.textContent = T.shelf.done; if (!r.data.already) showShelfNote(state.shelfCount + 1); }
+        else { b.disabled = false; var c = r.data && r.data.error; say('err', c === 'full' ? T.shelf.full : c === 'limit' ? T.shelf.limit : T.shelf.fail); }
+      }).catch(function () { b.disabled = false; say('err', T.shelf.fail); });
+    });
+    return b;
+  }
+  function showShelfNote(n) {
+    state.shelfCount = n;
+    $('shelf-note').hidden = !n;
+    $('shelf-note-text').textContent = fmt(T.shelf.note, { n: n });
+  }
+  function loadShelfCount() {
+    fetch('/api/library', { credentials: 'same-origin', cache: 'no-store' })
+      .then(function (r) { return r.status === 200 ? r.json() : null; })
+      .then(function (d) { if (d && d.ok) { (d.books || []).forEach(function (b) { state.onShelf[b.isbn13] = true; }); showShelfNote((d.books || []).length); } })
+      .catch(function () {});
+  }
   function renderPicks(items) {
     $('result-title').textContent = fmt(T.result.title, { lib: state.lib.n });
     var ol = $('picks'); clear(ol);
@@ -215,6 +241,7 @@
       li.appendChild(el('p', 'why', it.reason));
       var key = it.available === 'Y' ? 'Y' : it.available === 'N' ? 'N' : 'unknown';
       li.appendChild(el('span', 'badge ' + key, T.result[key]));
+      li.appendChild(readButton(it));
       ol.appendChild(li);
     });
   }
@@ -314,7 +341,7 @@
   $('submit').addEventListener('click', submit);
   $('use-saved').addEventListener('click', function () { if (state.lib && state.genres.length) submit(); });
 
-  initTaste(); loadUsage(); go('region', false);
+  initTaste(); loadUsage(); loadShelfCount(); go('region', false);
   var fromId = (/[?&]from=([0-9a-fA-F-]{36})(?:&|$)/.exec(location.search) || [])[1];
   initRegion().then(function (d) {
     if (d === null) return;

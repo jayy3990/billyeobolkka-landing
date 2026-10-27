@@ -21,6 +21,8 @@
   .badge.Y { background:#e6f6ec; color:#14532d; }
   .badge.N { background:#fff4d6; color:#7a4b00; }
   .badge.unknown { background:#eceef6; color:#3b4157; }
+  .readbtn { margin-top:8px; margin-left:8px; min-height:32px; padding:0 12px; border-radius:999px; border:2px solid var(--primary); background:var(--surface); color:var(--primary); font:inherit; font-size:13px; font-weight:800; cursor:pointer; }
+  .readbtn:disabled { opacity:.6; cursor:default; }
   .note { margin-top:10px; color:var(--muted); font-size:14px; }
   .rec-card .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
   .rec-card .actions .btn { margin-top:0; flex:1; min-width:150px; }
@@ -50,6 +52,7 @@
 </div></section>
 <script>
   window.HIST_T = { t: {{hist|json}}, age: {{rec.age|json}}, gender: {{rec.gender|json}}, genre: {{rec.genre|json}}, result: {{rec.result|json}} };
+  window.HIST_SHELF = {{rec.shelf|json}};
   window.HIST_LANG = {{$lang|json}};
   window.HIST_RECOMMEND = {{$recommend|json}};
   window.HIST_LOGIN = {{$login|json}};

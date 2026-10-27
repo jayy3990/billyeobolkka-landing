@@ -231,3 +231,38 @@ Vercel → 프로젝트 → **Settings → Environment Variables**에 추가한 
 
 ## 개인정보 메모
 - 연령대·성별과 추천 내용은 개인 취향 정보예요. 사용자가 체크를 끄면 저장하지 않고, 언제든 지울 수 있어요. 영리 서비스 전에 개인정보 처리방침에 "추천 기록 저장"을 반영하세요.
+
+
+# 내 서재 (읽은 책) + 추천 확장
+
+읽은 책을 서재에 모아 두면, 다음 추천에서 **읽은 책은 항상 빼고** 평가·최근 읽은 책을 취향 분석에 써요. 서재가 비어 있는 처음 사용자는 지금까지처럼 "재미있게 읽은 책 1~3권"으로 추천받아요.
+
+## 어떻게 동작하나요
+- **담기**: 추천 결과·추천 기록의 책마다 "읽었어요" 버튼, 그리고 `/library`(`/en/library`)의 제목 검색. 추천 결과/기록에서 담을 때는 내 추천 기록의 제목·저자를 쓰므로 정보나루 호출과 하루 검색 횟수(60회)를 쓰지 않아요. 검색으로 담을 때만 서버가 ISBN으로 정보나루에서 공식 제목·저자를 가져오고 검색 1회를 써요(실패하면 되돌려요).
+- **평가(선택)**: 재밌었어요 / 보통 / 별로예요. 안 골라도 담겨요. `/library`에서 바꾸거나 해제할 수 있고, 책을 서재에서 뺄 수 있어요(전체 삭제 버튼은 없어요).
+- **한도**: 사용자당 최대 300권(서버가 먼저 검사하고 DB 트리거도 막아요). 같은 책(ISBN)은 한 번만 담겨요.
+- **추천에서 읽은 책 빼기**: 후보 목록에서 같은 ISBN이거나 같은 작품(제목 끝의 `(개정판)`·`[큰글자]` 같은 괄호 꼬리를 뗀 뒤 비교)이면 AI에게 보내기 전에 서버가 빼요. 읽은 책을 빼고 후보가 5권 미만이면 "후보가 부족해요" 안내가 나오고 추천 횟수는 차감되지 않아요.
+- **취향 반영**: AI에게는 서재 제목·저자·평가(재밌게 읽음 최대 8권, 별로 5권, 그 밖 6권)만 `<read_books>`로 보내요. 사용자가 쓴 글은 보내지 않아요. 비슷한 책 조회(정보나루 `loanItemSrch`/`recommandList`)의 기준은 이번에 고른 책 + 서재의 "재밌게 읽음" 최근 책, 합쳐서 최대 3권이라 정보나루 호출 수는 그대로예요.
+- **서버**: `api/library.js`(GET 목록 / POST 담기 / PUT 평가 / DELETE 빼기), `api/_lib/shelf.js`. Origin 확인 → 로그인(`getUser`) → 허용값 검증 → 본인 행만(`user_id` 조건 + RLS). 화면이 보낸 제목은 저장하지 않아요. 서재 조회가 실패해도 추천은 서재 없이 계속돼요. 함수는 9개 → 10개(Vercel Hobby 한도 12).
+- **DB(`user_library`)**: RLS로 본인 행만 읽기·추가·평가 수정·삭제. 수정 가능한 칸은 `rating`뿐이에요. 값 범위는 CHECK로도 막아요. 계정이 삭제되면 같이 지워져요. `service_role` 키는 쓰지 않아요.
+
+## 내가 직접 해야 하는 설정
+- [ ] **Supabase SQL**: SQL Editor에서 `supabase/migrations/20261028000000_user_library.sql` 전체를 붙여 넣고 Run → `Success. No rows returned`가 나오면 정상이에요. (환경변수는 새로 필요 없어요)
+  - 확인 1: `select relname, relrowsecurity, relforcerowsecurity from pg_class where relname = 'user_library';` → 둘 다 **true**
+  - 확인 2: `select policyname, cmd from pg_policies where tablename = 'user_library' order by cmd;` → `DELETE`, `INSERT`, `SELECT`, `UPDATE` 정책 4개
+  - 확인 3: `select grantee, privilege_type from information_schema.role_table_grants where table_name = 'user_library' and grantee = 'anon';` → **결과 없음**
+  - 확인 4: `select grantee, column_name, privilege_type from information_schema.column_privileges where table_name = 'user_library' and grantee = 'authenticated' and privilege_type = 'UPDATE';` → `rating` **한 칸만**
+- [ ] 위 SQL을 실행한 **뒤에** 배포해요(표가 없으면 서재 화면은 "불러오지 못했어요"가 나오고, 추천은 서재 없이 그대로 돼요).
+
+## 시나리오 시험 (배포 후)
+1. `/recommend`에서 추천 → 결과의 책에서 **읽었어요** → "서재에 담았어요"로 바뀌고, 취향 단계에 "내 서재 N권을 반영해요" 안내.
+2. 같은 조건으로 다시 추천 → 담은 책이 결과에 나오지 않아요.
+3. `/library` → 담은 책 확인, 평가 칩(재밌었어요/보통/별로예요) 누르기·다시 눌러 해제, "서재에서 빼기"(확인창).
+4. `/library`의 검색 → 책 담기(하루 검색 횟수 1회 사용). 같은 책을 또 담아도 오류 없이 "담았어요".
+5. `/history`의 책에서도 **읽었어요** 동작, 이미 담긴 책은 "서재에 담았어요"로 비활성.
+6. 다른 계정으로 로그인하면 내 서재가 보이지 않아야 해요. 로그아웃 상태로 `/library`를 열면 로그인 화면으로 가요.
+7. 영어: `/en/library`, `/en/recommend`에서 같은 흐름.
+
+## 개인정보 메모
+- 읽은 책 목록과 평가는 개인 취향 정보예요. 사용자가 직접 담은 것만 저장하고, 한 권씩 언제든 뺄 수 있어요. 영리 서비스 전에 개인정보 처리방침에 "내 서재(읽은 책·평가) 저장"을 반영하세요.
+- AI(Claude)에는 서재의 제목·저자·평가만 가고, 이메일·이름 등 사용자 식별 정보는 가지 않아요.
