@@ -66,11 +66,18 @@ async function run(input) {
     items.map((it) => lib.availability(input.libCode, it.isbn13).then((v) => (v && v.has ? (v.loan ? "Y" : "N") : null)).catch(() => null))
   );
 
-  return {
-    items: items.map((it, i) => {
+  // 바로 빌릴 수 있는 책이 위로 오게 정렬: 대출 가능(Y) → 확인 불가(null) → 대출 중(N).
+  // 같은 묶음 안에서는 Claude가 고른 순서를 그대로 유지해요 (Array.prototype.sort는 안정 정렬)
+  const AVAIL_ORDER = { Y: 0, null: 1, N: 2 };
+  const ordered = items
+    .map((it, i) => {
       const c = byIsbn.get(it.isbn13);
       return { isbn13: it.isbn13, title: c.title, author: c.author, reason: it.reason, available: avail[i] };
-    }),
+    })
+    .sort((a, b) => AVAIL_ORDER[a.available] - AVAIL_ORDER[b.available]);
+
+  return {
+    items: ordered,
     liked: likedBooks.map((b) => ({ isbn13: b.isbn13, title: b.title, author: b.author })),
     meta: { pool: candidates.length, relaxed, hints: hints.length, shelf: shelf.length, usage },
   };

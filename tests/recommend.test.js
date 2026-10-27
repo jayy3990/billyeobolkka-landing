@@ -244,8 +244,8 @@ test("pipeline: 후보 안에서만 고르고, 제목·저자는 Claude가 아�
   const out = await pipeline.run({ lang: "ko", libCode: "141628", ageGroup: "20s", gender: "male", genres: ["novel"], liked: ["9788937462788"] });
   assert.equal(out.items.length, 3, "후보에 없는 ISBN은 제거");
   assert.equal(out.items[0].title, "소설책0번째");
-  assert.equal(out.items[1].available, "N", "대출 중");
-  assert.equal(out.items[0].available, "Y");
+  assert.deepEqual(out.items.map((i) => i.available), ["Y", "Y", "N"], "대출 가능이 먼저, 대출 중은 맨 뒤");
+  assert.equal(out.items[2].title, "소설책1번째", "대출 중인 책은 뒤로 밀려요");
   assert.deepEqual(lib.calls.popular[0], { libCode: "141628", gender: "0", age: "20", kdc: "8", addCodes: cfg.ADULT_ADD_CODES });
   assert.match(prompts[0].user, /노인과 바다 \/ 어니스트 헤밍웨이/);
   assert.match(prompts[0].user, /해저 2만 리/);
@@ -495,4 +495,15 @@ test("claude: 크레딧 부족(400)은 'billing'으로 구분하고 형식 없�
   await assert.rejects(() => claude.recommend({ system: "s", user: "u", schema: core.SCHEMA }), (e) => e.code === "billing");
   assert.equal(reqs.length, 1, "잔액 부족은 재시도해도 소용없어요");
   claude.deps.createClient = null;
+});
+
+test("pipeline: 대출 가능 → 확인 불가 → 대출 중 순으로 정렬하고, 같은 묶음 안에서는 Claude가 고른 순서를 유지해요", async () => {
+  // 후보 0~4의 상태: 0=대출 중, 1=대출 가능, 2=소장 확인 불가, 3=대출 가능, 4=대출 중
+  const state = [{ has: true, loan: false }, { has: true, loan: true }, { has: false }, { has: true, loan: true }, { has: true, loan: false }];
+  const lib = fakeLibrary({ popularBooks: novels, availability: (i) => { const k = novels.findIndex((b) => b.isbn13 === i); return state[k]; } });
+  pipeline.deps.library = lib;
+  pipeline.deps.claude = { recommend: async (p) => goodClaude(novels.slice(0, 5).map((b) => b.isbn13))(p) };
+  const out = await pipeline.run({ lang: "ko", libCode: "141628", ageGroup: "20s", gender: "male", genres: ["novel"], liked: [] });
+  assert.deepEqual(out.items.map((i) => i.available), ["Y", "Y", null, "N", "N"]);
+  assert.deepEqual(out.items.map((i) => i.title), ["소설책1번째", "소설책3번째", "소설책2번째", "소설책0번째", "소설책4번째"]);
 });
