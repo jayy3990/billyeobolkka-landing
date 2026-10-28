@@ -55,7 +55,7 @@
   .cards { list-style:none; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px; }
   .cards li { background:var(--surface); border:1px solid var(--line); border-left:8px solid var(--primary); border-radius:16px; padding:22px 22px 24px; }
   .cards li:nth-child(2) { border-left-color:var(--wood); }
-  .cards li:nth-child(3) { border-left-color:var(--s4); }
+  .cards li:nth-child(3) { border-left-color:var(--deep); }
   .cards .n { width:44px; height:44px; border-radius:50%; background:var(--primary); color:var(--on-primary); font-weight:700; font-size:22px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
   .cards p { margin-top:6px; color:var(--muted); font-size:17px; }
   .note { margin-top:16px; color:var(--muted); font-size:16px; }
@@ -107,7 +107,7 @@
   }
 </style></head>
 <body>
-<nav class="nav" aria-label="{{nav.label|attr}}"><div class="spine" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="wrap">
+<nav class="nav" aria-label="{{nav.label|attr}}"><div class="wrap">
   <a class="brand" href="#top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true"><rect width="128" height="128" rx="28" fill="#1f6b4f"/><path d="M24 48 C40 44 53 46 61 54 L61 96 C53 89 40 87 24 91 Z" fill="#fff"/><path d="M104 48 C88 44 75 46 67 54 L67 96 C75 89 88 87 104 91 Z" fill="#fff"/><path d="M94 15 L96.8 23.2 L105 26 L96.8 28.8 L94 37 L91.2 28.8 L83 26 L91.2 23.2 Z" fill="#f0b457"/></svg>{{brand}}</a>
   <ul class="menu" id="menu">
     <li><a href="#about">{{nav.about}}</a></li>

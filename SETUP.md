@@ -328,7 +328,7 @@ Vercel → 프로젝트 → **Settings → Environment Variables**에 추가한 
 
 # 디자인 (서가 테마)
 
-사이트 전체 디자인은 "서가" 콘셉트예요: 초록 계열, 맨 위 책등 줄무늬, 책 카드 왼쪽의 책등 띠(모험 책은 원목색 띠), 알약 모양 버튼. 라이트·다크 모드를 모두 지원해요.
+사이트 전체 디자인은 "서가" 콘셉트예요: 초록 계열, 책 카드 왼쪽의 책등 띠(모험 책은 원목색 띠), 알약 모양 버튼. 라이트·다크 모드를 모두 지원해요.
 
 - **색은 한 곳에서**: `src/partials/theme.html`의 `:root`(라이트)와 `@media (prefers-color-scheme: dark)`(다크). 모든 페이지가 이 값을 변수(`--primary`, `--deep`, `--wood` …)로 써요. 색을 바꿀 때는 이 파일과 `../../brand/brand.json`을 같은 값으로 함께 고쳐요.
 - **페이지별 구조**: 공통 머리(`src/partials/authtop.html`)를 쓰는 로그인·가입·계정·추천·내 서재·추천 기록, 그리고 따로 만든 메인(`index.template.html`)·사전 신청(`apply.template.html`).
