@@ -118,7 +118,7 @@ test("login: 실패 사유(이메일/비밀번호/미인증)를 구분하지 않
 
 test("login: 성공 시 안전한 주소로만 이동", async () => {
   fake();
-  const cases = [["/en/account", "/en/account"], ["//evil.com", "/account"], ["https://evil.com", "/account"], [undefined, "/account"]];
+  const cases = [["/en/account", "/en/account"], ["/recommend", "/recommend"], ["//evil.com", "/"], ["https://evil.com", "/"], [undefined, "/"], ["", "/"]];
   for (const [next, expected] of cases) {
     const res = makeRes();
     await login(post({ email: "A@B.co", password: "pw", captchaToken: "t", next }), res);

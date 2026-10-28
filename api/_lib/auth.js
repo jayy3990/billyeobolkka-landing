@@ -59,6 +59,7 @@ function safeNext(next, fallback) {
 }
 
 const defaultAccount = (lang) => (lang === "en" ? "/en/account" : "/account");
+const defaultHome = (lang) => (lang === "en" ? "/en" : "/");
 const loginPath = (lang) => (lang === "en" ? "/en/login" : "/login");
 
 // ── 응답 도우미 ─────────────────────────────────────────────
@@ -170,7 +171,7 @@ function captchaToken(body) {
 }
 
 module.exports = {
-  getEnv, siteUrl, safeNext, defaultAccount, loginPath, checkPassword, checkEmail, normLang,
+  getEnv, siteUrl, safeNext, defaultAccount, defaultHome, loginPath, checkPassword, checkEmail, normLang,
   send, fail, redirect, readBody, sameOriginPost, sameOriginMutation, mapAuthError, deps,
   RECOVERY_COOKIE, setRecoveryFlag, hasRecoveryFlag, clearSessionCookies, captchaToken,
   PASSWORD_MIN, PASSWORD_MAX,

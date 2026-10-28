@@ -66,14 +66,14 @@ test("demo: 성공하면 서버가 환경변수의 계정으로 로그인하고,
     const log = fake();
     let res = await call("demo", { body: { captchaToken: "tok", lang: "ko", email: "attacker@evil.test", password: "x" } });
     assert.equal(res.code, 200);
-    assert.deepEqual(JSON.parse(res.body), { ok: true, redirect: "/recommend" });
+    assert.deepEqual(JSON.parse(res.body), { ok: true, redirect: "/" });
     assert.equal(log.signIn.length, 1);
     assert.equal(log.signIn[0].email, DEMO_EMAIL.toLowerCase(), "요청이 보낸 이메일이 아니라 환경변수의 계정");
     assert.equal(log.signIn[0].password, DEMO_PASSWORD);
     assert.equal(log.signIn[0].options.captchaToken, "tok");
     assert.ok(!res.body.includes(DEMO_PASSWORD) && !res.body.toLowerCase().includes("demo.user"));
     res = await call("demo", { body: { captchaToken: "tok", lang: "en" } });
-    assert.equal(JSON.parse(res.body).redirect, "/en/recommend");
+    assert.equal(JSON.parse(res.body).redirect, "/en");
   } finally { setDemo(false); }
 });
 

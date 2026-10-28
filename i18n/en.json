@@ -75,8 +75,7 @@
         "title": "What's different",
         "body": "Set your interests once, and AI recommends books that fit."
       },
-      "ctaRecommend": "Get recommendations",
-      "ctaDemo": "Try it now"
+      "ctaRecommend": "Get recommendations"
     },
     "service": {
       "tag": "Service",
@@ -275,7 +274,6 @@
     "demo": {
       "button": "Start with the demo account",
       "hint": "This is the demo account for the competition. Press it after the check above is done.",
-      "cta": "Try it now",
       "accountTitle": "You're using the demo account",
       "accountLead": "This shared demo account shows its bookshelf, history, and settings to everyone. When you're done, please clear them for the next person.",
       "reset": "Clear demo data",

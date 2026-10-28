@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
       if (code === "rate") return A.fail(res, 429, "rate");
       return A.fail(res, 500, "server");
     }
-    return A.send(res, 200, { ok: true, redirect: lang === "en" ? "/en/recommend" : "/recommend" });
+    return A.send(res, 200, { ok: true, redirect: A.defaultHome(lang) });
   } catch (e) {
     console.error("demo 오류", e && e.message);
     return A.fail(res, 500, "server");

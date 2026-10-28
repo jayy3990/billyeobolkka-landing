@@ -138,7 +138,7 @@
         if (window.BBTurnstile.enabled() && !token) return show('err', errText('captcha'));
         demoBusy = true; demoBtn.disabled = true; demoBtn.textContent = DT.sending || '...';
         post('/api/auth/demo', { lang: LANG, captchaToken: token }).then(function (d) {
-          if (d && d.ok) { location.href = d.redirect || U.account || '/'; return; }
+          if (d && d.ok) { location.href = d.redirect || U.home || '/'; return; }
           show('err', d && d.error && d.error !== 'server' ? errText(d.error) : (DT.fail || errText('generic')));
           demoBusy = false; demoBtn.disabled = false; demoBtn.textContent = demoText;
           window.BBTurnstile.reset();
@@ -196,7 +196,7 @@
           if (d && d.error === 'auth') setTimeout(function () { location.href = U.login || '/login'; }, 1500);
           return;
         }
-        if (kind === 'login') { writeHint(true); show('ok', T.loginDone); location.href = d.redirect || U.account || '/'; return; }
+        if (kind === 'login') { writeHint(true); show('ok', T.loginDone); location.href = d.redirect || U.home || '/'; return; }
         if (kind === 'signup') {
           form.reset();
           document.getElementById('signup-form-area').hidden = true;

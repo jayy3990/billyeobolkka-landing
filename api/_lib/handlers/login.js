@@ -1,4 +1,4 @@
-// 로그인: 성공하면 세션을 httpOnly 쿠키에 심고, 안전하게 검사한 이동 주소를 돌려줘요.
+// 로그인: 성공하면 세션을 httpOnly 쿠키에 심고, 안전하게 검사한 이동 주소(기본은 메인 화면)를 돌려줘요.
 // 실패는 어느 쪽이 틀렸는지 알려 주지 않고 항상 같은 코드("credentials")예요.
 const A = require("../auth");
 
@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
       if (code === "rate") return A.fail(res, 429, "rate");
       return A.fail(res, 401, "credentials"); // 이메일/비밀번호/미인증 구분 없이 같은 응답
     }
-    return A.send(res, 200, { ok: true, redirect: A.safeNext(b.next, A.defaultAccount(lang)) });
+    return A.send(res, 200, { ok: true, redirect: A.safeNext(b.next, A.defaultHome(lang)) });
   } catch (e) {
     console.error("login 오류", e && e.message);
     return A.fail(res, 500, "server");

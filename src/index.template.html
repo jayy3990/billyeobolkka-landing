@@ -133,7 +133,6 @@
   <div class="cta-row">
     <a class="btn big" href="{{$apply}}">{{home.about.cta}}</a>
     <a class="btn big ghost" href="{{$recommend}}">{{home.about.ctaRecommend}}</a>
-    <a class="btn big" id="demo-cta" href="{{$login}}?demo=1" hidden>{{home.about.ctaDemo}}</a>
   </div>
   <div class="two">
     <div class="card"><h3>{{home.about.c1.title}}</h3><p>{{home.about.c1.body}}</p></div>
@@ -188,10 +187,8 @@
 
 <footer><div class="wrap">{{brand}} · {{slogan}}</div></footer>
 
-<script src="/config.js"></script>
 <script>
   var T = {{home.ui|json}};
-  if (window.DEMO_ENABLED) { var dc = document.getElementById('demo-cta'); if (dc) dc.hidden = false; }
   var LANG = {{$lang|json}};
 
   // 헤더의 로그인/로그아웃 버튼과 언어 전환 때 보던 섹션 유지는 /auth.js 가 맡아요
