@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
     const supabase = A.deps.createSupabase(req, res);
     const { data, error } = await supabase.auth.getUser();
     if (error || !data || !data.user) return A.send(res, 200, { ok: true, loggedIn: false });
-    return A.send(res, 200, { ok: true, loggedIn: true, email: data.user.email || "", demo: demo.isDemoEmail(data.user.email) });
+    return A.send(res, 200, { ok: true, loggedIn: true, email: data.user.email || "", anonymous: demo.isAnonymous(data.user) });
   } catch (e) {
     return A.send(res, 200, { ok: true, loggedIn: false });
   }

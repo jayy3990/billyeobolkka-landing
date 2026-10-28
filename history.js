@@ -13,7 +13,8 @@
   function say(kind, text) { var m = $('hmsg'); m.className = kind || ''; m.textContent = text || ''; }
 
   var S = window.HIST_SHELF || {}, M = window.HIST_MAIL || {}, ADV = window.HIST_ADV || {};
-  var records = [], onShelf = {};
+  var records = [], onShelf = {}, anon = false;
+  var meLoad = (window.__authMe || Promise.resolve(null)).then(function (d) { anon = !!(d && d.anonymous === true); }).catch(function () {});
   var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   function when(iso) {
@@ -93,7 +94,7 @@
     }
     var mailBtn = el('button', 'btn ghost', M.send); mailBtn.type = 'button';
     mailBtn.addEventListener('click', function () { sendMail(r.id, mailBtn, mailMsg); });
-    actions.appendChild(mailBtn);
+    if (!anon) actions.appendChild(mailBtn); // 임시 체험 계정은 이메일이 없어서 메일로 받기를 쓸 수 없어요
     var mailMsg = el('p', 'inline-msg'); mailMsg.hidden = true; mailMsg.setAttribute('role', 'status'); mailMsg.setAttribute('aria-live', 'polite');
     var del = el('button', 'btn ghost', T['delete']); del.type = 'button';
     del.addEventListener('click', function () { removeOne(r.id, del); });
@@ -144,7 +145,7 @@
     .catch(function () {});
   api('GET').then(function (r) {
     if (r.status === 401) return authFail();
-    if (r.data && r.data.ok) { records = r.data.records || []; return shelfLoad.then(render); }
+    if (r.data && r.data.ok) { records = r.data.records || []; return Promise.all([shelfLoad, meLoad]).then(render); }
     $('hloading').hidden = true; say('err', T.loadFail);
   }).catch(function () { $('hloading').hidden = true; say('err', T.loadFail); });
 })();

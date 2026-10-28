@@ -194,7 +194,8 @@
       "signup": "Sign up",
       "account": "My account",
       "logout": "Log out",
-      "home": "← Back to home"
+      "home": "← Back to home",
+      "demoEnd": "End demo"
     },
     "common": {
       "email": "Email",
@@ -267,19 +268,16 @@
         "generic": "Something went wrong. Please try again in a moment."
       },
       "demo": {
-        "sending": "Signing in to the demo account...",
-        "fail": "Couldn't sign in to the demo account. Please try again in a moment."
+        "sending": "Creating your temporary account...",
+        "fail": "Couldn't start the demo. Please try again in a moment.",
+        "logoutConfirm": "End the demo? If you log out, you won't be able to see this temporary account's bookshelf, history, or settings again."
       }
     },
     "demo": {
-      "button": "Start with the demo account",
-      "hint": "This is the demo account for the competition. Press it after the check above is done.",
-      "accountTitle": "You're using the demo account",
-      "accountLead": "This shared demo account shows its bookshelf, history, and settings to everyone. When you're done, please clear them for the next person.",
-      "reset": "Clear demo data",
-      "resetConfirm": "Clear the demo account's bookshelf, history, and settings?",
-      "resetDone": "Demo data cleared.",
-      "resetFail": "Couldn't clear it. Please try again in a moment."
+      "button": "Start the demo (temporary account)",
+      "hint": "A temporary account of your own is created without an email. Your bookshelf and history are only yours, and they disappear when you log out. Press it after the check above is done.",
+      "accountTitle": "You're on a temporary demo account",
+      "accountLead": "This demo account was made without an email. If you log out or clear your browser data, you won't be able to see its bookshelf, history, or settings again. Email delivery isn't available."
     }
   },
   "rec": {
@@ -414,7 +412,8 @@
       "fail": "Couldn't send the email. Please try again in a moment.",
       "needHistory": "To get these by email, turn on \"Keep these picks in my history\" before getting picks.",
       "hint": "Sends these picks to the email you signed up with.",
-      "done": "✓ Sent"
+      "done": "✓ Sent",
+      "noAnon": "Email delivery isn't available on a temporary demo account."
     },
     "adventure": {
       "label": "Pick style",

@@ -9,7 +9,7 @@
   var T = window.REC_T || {}, LANG = window.REC_LANG || 'ko';
   var MAX_GENRES = 3, MAX_LIKED = 3, MAX_REMAIN = 5; // MAX_REMAIN: 서버가 알려 주는 내 하루 한도로 바뀌어요
   var $ = function (id) { return document.getElementById(id); };
-  var state = { resultMode: 'normal', shelfCount: 0, historyId: null, onShelf: {}, data: null, sido: '', gu: '', lib: null, genres: [], liked: [], busy: false, saved: null };
+  var state = { anonymous: false, resultMode: 'normal', shelfCount: 0, historyId: null, onShelf: {}, data: null, sido: '', gu: '', lib: null, genres: [], liked: [], busy: false, saved: null };
 
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o && o[k] != null ? o[k] : m; }); }
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
@@ -203,9 +203,9 @@
   // 결과 화면의 기록 안내: 저장됐으면 링크, 저장을 켰는데 실패했으면 알려 줘요 (추천 결과는 그대로)
   // "메일로 받기": 저장된 내 추천 기록을 내 로그인 이메일로 보내요 (받는 주소는 서버가 정해요)
   function showMailBox() {
-    var ok = !!state.historyId;
+    var ok = !!state.historyId && !state.anonymous;
     $('mail-box').hidden = !ok;
-    var h = $('mail-hint'); h.hidden = ok; h.textContent = ok ? '' : T.mail.needHistory;
+    var h = $('mail-hint'); h.hidden = ok; h.textContent = ok ? '' : (state.anonymous ? T.mail.noAnon : T.mail.needHistory);
     mailReset(); $('mail-msg').hidden = true;
   }
   function mailSay(kind, text) { var m = $('mail-msg'); m.className = 'inline-msg ' + kind; m.textContent = text; m.hidden = false; }
@@ -383,6 +383,7 @@
   $('mail-send').addEventListener('click', sendMail);
   $('use-saved').addEventListener('click', function () { if (state.lib && state.genres.length) submit(); });
 
+  (window.__authMe || Promise.resolve(null)).then(function (d) { state.anonymous = !!(d && d.anonymous === true); }).catch(function () {});
   initTaste(); loadUsage(); loadShelfCount(); go('region', false);
   var fromId = (/[?&]from=([0-9a-fA-F-]{36})(?:&|$)/.exec(location.search) || [])[1];
   initRegion().then(function (d) {

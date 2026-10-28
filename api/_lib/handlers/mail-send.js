@@ -18,7 +18,8 @@ module.exports = async (req, res) => {
     if (error || !data || !data.user) return A.fail(res, 401, "auth");
     const uid = data.user.id;
     const to = data.user.email;
-    if (!to) return A.fail(res, 400, "email");
+    // 임시 체험 계정은 이메일이 없어서 메일을 받을 수 없어요 (횟수를 쓰기 전에 거절)
+    if (!to || data.user.is_anonymous === true) return A.fail(res, 400, "email");
 
     const rs = await supabase.rpc("reserve_usage", { p_kind: "mail" });
     const row = rs.error ? null : (Array.isArray(rs.data) ? rs.data[0] : rs.data);

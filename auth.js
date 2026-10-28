@@ -67,21 +67,25 @@
   function readHint() { try { return localStorage.getItem(HINT_KEY) === '1'; } catch (e) { return false; } }
   function writeHint(v) { try { if (v) localStorage.setItem(HINT_KEY, '1'); else localStorage.removeItem(HINT_KEY); } catch (e) {} }
 
+  var isAnon = false; // 임시 체험 계정인지 (서버가 알려 줘요)
   function doLogout() {
+    var DT0 = T.demo || {};
+    if (isAnon && DT0.logoutConfirm && !window.confirm(DT0.logoutConfirm)) return;
     writeHint(false);
     post('/api/auth/logout', {}).then(function () { location.href = U.home || '/'; });
   }
   var shown = null;
   function renderSlots(loggedIn) {
-    if (shown === loggedIn) return; // 이미 같은 모습이면 다시 그리지 않아요 (깜빡임 방지)
-    shown = loggedIn;
+    var key = loggedIn + ':' + isAnon;
+    if (shown === key) return; // 이미 같은 모습이면 다시 그리지 않아요 (깜빡임 방지)
+    shown = key;
     var slots = document.querySelectorAll('[data-auth-slot]');
     for (var i = 0; i < slots.length; i++) {
       var s = slots[i];
       while (s.firstChild) s.removeChild(s.firstChild);
       if (loggedIn) {
         s.appendChild(el('a', { href: U.account || '/account' }, H.account));
-        var b = el('button', { type: 'button' }, H.logout);
+        var b = el('button', { type: 'button' }, isAnon && H.demoEnd ? H.demoEnd : H.logout);
         b.addEventListener('click', doLogout);
         s.appendChild(b);
       } else {
@@ -96,7 +100,7 @@
     var p = window.__authMe || fetch('/api/auth/me', { credentials: 'same-origin', cache: 'no-store' })
       .then(function (r) { return r.json(); }).catch(function () { return null; });
     p.then(function (d) {
-      if (d && typeof d.loggedIn === 'boolean') { writeHint(d.loggedIn); renderSlots(d.loggedIn); } // 서버가 확인한 결과로 바로잡기
+      if (d && typeof d.loggedIn === 'boolean') { isAnon = d.loggedIn && d.anonymous === true; writeHint(d.loggedIn); renderSlots(d.loggedIn); } // 서버가 확인한 결과로 바로잡기
     });
   }
 

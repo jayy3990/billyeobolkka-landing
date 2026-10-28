@@ -16,7 +16,7 @@
 <section class="narrow"><div class="wrap">
   <h1>{{auth.account.title}}</h1>
   <p class="lead">{{auth.account.lead}}</p>
-  <div class="card">
+  <div class="card" id="email-card">
     <label>{{auth.account.emailLabel}}</label>
     <div class="kv">[[email]]</div>
   </div>
@@ -48,11 +48,9 @@
     <p class="hint">{{hist.accountLead}}</p>
     <div class="actions"><a class="btn ghost" href="{{$history}}">{{hist.accountOpen}}</a></div>
   </div>
-  <div class="card prefs" id="demo-card" hidden>
+  <div class="card prefs" id="anon-card" hidden>
     <h2>{{auth.demo.accountTitle}}</h2>
     <p class="hint">{{auth.demo.accountLead}}</p>
-    <div class="actions"><button class="btn ghost" id="demo-reset" type="button">{{auth.demo.reset}}</button></div>
-    <div id="demo-msg" class="inline-msg" role="status" aria-live="polite" hidden></div>
   </div>
   <button class="btn ghost" type="button" data-auth-logout>{{auth.account.logout}}</button>
   <p class="links"><a href="{{$home}}">{{auth.account.toHome}}</a></p>
@@ -60,9 +58,6 @@
 <script>
   window.PREF_T = { t: {{prefs|json}}, age: {{rec.age|json}}, gender: {{rec.gender|json}}, genre: {{rec.genre|json}} };
 </script>
-<script>
-  window.DEMO_T = { confirm: {{auth.demo.resetConfirm|json}}, done: {{auth.demo.resetDone|json}}, fail: {{auth.demo.resetFail|json}} };
-</script>
 <script src="/prefs.js" defer></script>
-<script src="/demo.js" defer></script>
+<script src="/anon.js" defer></script>
 {{> authbottom}}
