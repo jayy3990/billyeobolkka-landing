@@ -12,7 +12,7 @@
   function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
   function say(kind, text) { var m = $('hmsg'); m.className = kind || ''; m.textContent = text || ''; }
 
-  var S = window.HIST_SHELF || {}, M = window.HIST_MAIL || {};
+  var S = window.HIST_SHELF || {}, M = window.HIST_MAIL || {}, ADV = window.HIST_ADV || {};
   var records = [], onShelf = {};
   var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -41,21 +41,27 @@
   }
 
   // "메일로 받기": 이 기록을 내 로그인 이메일로 보내요
-  function sendMail(recordId, btn) {
-    btn.disabled = true; btn.textContent = M.sending; say('', '');
+  function sendMail(recordId, btn, msgEl) {
+    function reset() { btn.disabled = false; btn.className = 'btn ghost'; btn.textContent = M.send; }
+    function mailSay(kind, text) { msgEl.className = 'inline-msg ' + kind; msgEl.textContent = text; msgEl.hidden = false; }
+    btn.disabled = true; btn.className = 'btn ghost busy'; btn.textContent = M.sending; msgEl.hidden = true;
     fetch('/api/mail/send', { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ historyId: recordId }) })
       .then(function (r) { return r.json().catch(function () { return { ok: false }; }).then(function (d) { return { status: r.status, data: d }; }); })
       .then(function (r) {
         if (r.status === 401) return authFail();
-        if (r.data && r.data.ok) say('ok', fmt(M.sent, { email: r.data.to || '' }));
-        else say('err', r.data && r.data.error === 'limit' ? M.limit : M.fail);
-      }).catch(function () { say('err', M.fail); })
-      .then(function () { btn.disabled = false; btn.textContent = M.send; });
+        if (r.data && r.data.ok) {
+          btn.className = 'btn ghost sent'; btn.textContent = M.done;
+          mailSay('ok', fmt(M.sent, { email: r.data.to || '' }));
+          setTimeout(reset, 4000);
+        } else { reset(); mailSay('err', r.data && r.data.error === 'limit' ? M.limit : M.fail); }
+      }).catch(function () { reset(); mailSay('err', M.fail); });
   }
 
   function card(r) {
     var c = el('article', 'card rec-card');
-    c.appendChild(el('p', 'when', when(r.createdAt)));
+    var wh = el('p', 'when', when(r.createdAt));
+    if (r.mode === 'adventure') wh.appendChild(el('span', 'badge adv', ADV.historyBadge));
+    c.appendChild(wh);
     var none = T.none || '-';
     var dl = el('dl');
     row(dl, T.library, r.libName ? (r.libSido + ' ' + r.libGu + ' · ' + r.libName) : T.libGone);
@@ -73,6 +79,7 @@
       if (it.reason) li.appendChild(el('p', 'why', it.reason));
       var key = it.available === 'Y' ? 'Y' : it.available === 'N' ? 'N' : 'unknown';
       li.appendChild(el('span', 'badge ' + key, (H.result && H.result[key]) || ''));
+      if (it.genre) li.appendChild(el('span', 'badge adv', fmt(ADV.badge, { genre: (H.genre && H.genre[it.genre]) || '' })));
       li.appendChild(readButton(r.id, it.isbn13));
       ol.appendChild(li);
     });
@@ -85,12 +92,14 @@
       actions.appendChild(again);
     }
     var mailBtn = el('button', 'btn ghost', M.send); mailBtn.type = 'button';
-    mailBtn.addEventListener('click', function () { sendMail(r.id, mailBtn); });
+    mailBtn.addEventListener('click', function () { sendMail(r.id, mailBtn, mailMsg); });
     actions.appendChild(mailBtn);
+    var mailMsg = el('p', 'inline-msg'); mailMsg.hidden = true; mailMsg.setAttribute('role', 'status'); mailMsg.setAttribute('aria-live', 'polite');
     var del = el('button', 'btn ghost', T['delete']); del.type = 'button';
     del.addEventListener('click', function () { removeOne(r.id, del); });
     actions.appendChild(del);
     c.appendChild(actions);
+    c.appendChild(mailMsg);
     return c;
   }
 

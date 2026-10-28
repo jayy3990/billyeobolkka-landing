@@ -38,7 +38,9 @@ module.exports = async (req, res) => {
 
     // 내 서재(읽은 책)가 있으면 추천에서 빼고 취향에 반영해요. 서재를 못 읽어도 추천은 계속해요
     const shelf = await shelfLib.load(supabase, uid);
-    const out = await pipeline.run({ ...v.value, shelf });
+    // 모험 추천이면 최근에 추천받은 책도 빼요(같은 모험이 반복되지 않게)
+    const avoid = v.value.mode === "adventure" ? await history.recentBooks(supabase, uid) : [];
+    const out = await pipeline.run({ ...v.value, shelf, avoid });
     // 추천 기록 저장 (사용자가 끄지 않았을 때만). 저장이 실패해도 추천 결과는 그대로 보여 줘요
     const historyId = v.value.saveHistory ? await history.save(supabase, uid, v.value, out) : null;
     return A.send(res, 200, { ok: true, items: out.items, remaining: r.remaining, historySaved: !!historyId, historyId, shelfCount: shelf.length });

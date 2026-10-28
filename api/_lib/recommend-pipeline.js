@@ -9,7 +9,7 @@ const core = require("./recommend-core");
 const shelfLib = require("./shelf");
 const { AGE_GROUPS, GENDERS, LIMITS, ADULT_ADD_CODES } = require("./recommend-config");
 
-const deps = { library, claude };
+const deps = { library, claude, random: Math.random };
 
 async function run(input) {
   const { library: lib, claude: ai } = deps;
@@ -26,18 +26,50 @@ async function run(input) {
   const hints = seeds.length ? await lib.maniaRecs(seeds).catch(() => []) : [];
 
   // 3) 이 도서관 후보: 같은 성별·연령의 인기대출(소장 보장) + 최근 입수(신간 보강)
-  const { kdcs } = core.bucketsFor(input.genres);
-  const fetchPop = (g, a) => Promise.all(kdcs.map((kdc) => lib.popular({ libCode: input.libCode, gender: g, age: a, kdc, addCodes: ADULT_ADD_CODES })));
-  let popular = (await fetchPop(gender, age)).flat();
-  const recent = (await Promise.all(kdcs.map((kdc) => lib.recent({ libCode: input.libCode, kdc }).catch(() => [])))).flat();
+  //    모험 추천이면 내 장르 밖의 낯선 장르에서, 최근 추천받은 책(avoid)과 읽은 책은 빼고 모아요
+  const adventure = input.mode === "adventure";
+  const exclude = adventure ? [...shelf, ...(Array.isArray(input.avoid) ? input.avoid : [])] : shelf;
+  const fetchFor = (ids, g, a) => {
+    const { kdcs } = core.bucketsFor(ids);
+    return Promise.all([
+      Promise.all(kdcs.map((kdc) => lib.popular({ libCode: input.libCode, gender: g, age: a, kdc, addCodes: ADULT_ADD_CODES }))).then((x) => x.flat()),
+      Promise.all(kdcs.map((kdc) => lib.recent({ libCode: input.libCode, kdc }).catch(() => []))).then((x) => x.flat()),
+    ]);
+  };
+  // 모험: 낯선 장르마다 후보를 따로 모아(장르당 상한) 합쳐서, 한 장르가 후보를 독차지하지 못하게 해요
+  const advCandidates = (ids, popular, recent) => {
+    const per = Math.max(10, Math.floor(LIMITS.maxCandidates / ids.length));
+    const seen = new Set(), out = [];
+    for (const id of ids) {
+      for (const c of core.assembleCandidates({ popular, recent, genres: [id], liked: likedBooks, exclude, avoidGenres: input.genres, cap: per })) {
+        if (!seen.has(c.isbn13)) { seen.add(c.isbn13); out.push(c); }
+      }
+    }
+    return out;
+  };
 
-  let candidates = core.assembleCandidates({ popular, recent, genres: input.genres, liked: likedBooks, exclude: shelf });
-  let relaxed = false;
-  if (candidates.length < LIMITS.minPool && (gender || age)) {
-    // 조건이 너무 좁아서 후보가 적으면, 성별·연령 조건을 풀어서 이 도서관 전체 인기로 보강해요
-    relaxed = true;
-    const wide = (await fetchPop(null, null)).flat();
-    candidates = core.assembleCandidates({ popular: [...popular, ...wide], recent, genres: input.genres, liked: likedBooks, exclude: shelf });
+  let offIds = [];
+  let candidates, relaxed = false;
+  if (adventure) {
+    offIds = core.offGenres(input.genres, input.distance, deps.random, LIMITS.adventureGenres);
+    let [popular, recent] = await fetchFor(offIds, gender, age);
+    candidates = advCandidates(offIds, popular, recent);
+    if (candidates.length < LIMITS.minPool) {
+      // 후보가 모자라면 낯선 장르를 더 넓히고 성별·연령 조건도 풀어요
+      relaxed = true;
+      offIds = core.offGenres(input.genres, input.distance, deps.random, LIMITS.adventureWide);
+      [popular, recent] = await fetchFor(offIds, null, null);
+      candidates = advCandidates(offIds, popular, recent);
+    }
+  } else {
+    const [popular, recent] = await fetchFor(input.genres, gender, age);
+    candidates = core.assembleCandidates({ popular, recent, genres: input.genres, liked: likedBooks, exclude });
+    if (candidates.length < LIMITS.minPool && (gender || age)) {
+      // 조건이 너무 좁아서 후보가 적으면, 성별·연령 조건을 풀어서 이 도서관 전체 인기로 보강해요
+      relaxed = true;
+      const [widePop] = await fetchFor(input.genres, null, null);
+      candidates = core.assembleCandidates({ popular: [...popular, ...widePop], recent, genres: input.genres, liked: likedBooks, exclude });
+    }
   }
   if (candidates.length < 5) throw new core.PipelineError("few");
 
@@ -46,19 +78,24 @@ async function run(input) {
   const prompt = core.buildPrompt({
     lang: input.lang, ageGroup: input.ageGroup, gender: input.gender, genres: input.genres,
     liked: likedBooks, hints, candidates, shelf: shelfLib.summarize(shelf),
+    adventure: adventure ? { distance: input.distance, genres: offIds } : null,
   });
-  let items = null;
+  let items = null, fallback = null;
   let usage = { input: 0, output: 0 };
+  // 모험은 서로 다른 낯선 장르가 섞여야 해요(후보가 허용하는 범위에서). 부족하면 한 번 더 시도하고, 그래도 안 되면 처음 결과를 써요
+  const needGenres = adventure ? Math.min(LIMITS.adventureMinGenres, new Set(candidates.map((c) => c.genre)).size) : 0;
   for (let attempt = 0; attempt < 2 && !items; attempt++) {
     try {
       const out = await ai.recommend(prompt);
       usage = { input: usage.input + out.usage.input, output: usage.output + out.usage.output };
       items = core.validateOutput(out.data, candidates);
+      if (items && adventure && new Set(items.map((it) => byIsbn.get(it.isbn13).genre)).size < needGenres) { fallback = fallback || items; items = null; }
     } catch (e) {
       if (e && e.code === "parse" && attempt === 0) continue; // 파싱 실패만 재시도
       throw e;
     }
   }
+  if (!items) items = fallback;
   if (!items) throw new core.PipelineError("ai");
 
   // 5) 대출 가능 여부 (전날 기준, 캐시): Y 대출 가능 / N 대출 중 / null 확인 불가
@@ -72,14 +109,14 @@ async function run(input) {
   const ordered = items
     .map((it, i) => {
       const c = byIsbn.get(it.isbn13);
-      return { isbn13: it.isbn13, title: c.title, author: c.author, reason: it.reason, available: avail[i] };
+      return { isbn13: it.isbn13, title: c.title, author: c.author, reason: it.reason, available: avail[i], ...(adventure ? { adventure: true, genre: c.genre || null } : {}) };
     })
     .sort((a, b) => AVAIL_ORDER[a.available] - AVAIL_ORDER[b.available]);
 
   return {
     items: ordered,
     liked: likedBooks.map((b) => ({ isbn13: b.isbn13, title: b.title, author: b.author })),
-    meta: { pool: candidates.length, relaxed, hints: hints.length, shelf: shelf.length, usage },
+    meta: { pool: candidates.length, relaxed, hints: hints.length, shelf: shelf.length, mode: adventure ? "adventure" : "normal", off: offIds, usage },
   };
 }
 

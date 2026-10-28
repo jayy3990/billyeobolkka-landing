@@ -9,7 +9,7 @@
   var T = window.REC_T || {}, LANG = window.REC_LANG || 'ko';
   var MAX_GENRES = 3, MAX_LIKED = 3, MAX_REMAIN = 5;
   var $ = function (id) { return document.getElementById(id); };
-  var state = { shelfCount: 0, historyId: null, onShelf: {}, data: null, sido: '', gu: '', lib: null, genres: [], liked: [], busy: false, saved: null };
+  var state = { resultMode: 'normal', shelfCount: 0, historyId: null, onShelf: {}, data: null, sido: '', gu: '', lib: null, genres: [], liked: [], busy: false, saved: null };
 
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o && o[k] != null ? o[k] : m; }); }
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
@@ -189,7 +189,7 @@
     post('/api/recommend', {
       lang: LANG, libCode: state.lib.c, ageGroup: $('age').value, gender: $('gender').value,
       genres: state.genres.slice(), liked: state.liked.map(function (b) { return b.isbn13; }),
-      saveHistory: $('save-history').checked
+      saveHistory: $('save-history').checked, mode: modeBody().mode, distance: modeBody().distance
     }).then(function (r) {
       if (r.status === 401) { go('taste', false); return authFail(); }
       var d = r.data || {};
@@ -206,16 +206,24 @@
     var ok = !!state.historyId;
     $('mail-box').hidden = !ok;
     var h = $('mail-hint'); h.hidden = ok; h.textContent = ok ? '' : T.mail.needHistory;
-    $('mail-send').disabled = false; $('mail-send').textContent = T.mail.send;
+    mailReset(); $('mail-msg').hidden = true;
   }
+  function mailSay(kind, text) { var m = $('mail-msg'); m.className = 'inline-msg ' + kind; m.textContent = text; m.hidden = false; }
+  function mailReset() { var b = $('mail-send'); b.disabled = false; b.className = 'btn ghost'; b.textContent = T.mail.send; }
   function sendMail() {
     if (!state.historyId) return;
-    var b = $('mail-send'); b.disabled = true; b.textContent = T.mail.sending; say('', '');
+    var b = $('mail-send'); b.disabled = true; b.className = 'btn ghost busy'; b.textContent = T.mail.sending; $('mail-msg').hidden = true;
     post('/api/mail/send', { historyId: state.historyId }).then(function (r) {
       if (r.status === 401) return authFail();
-      if (r.data && r.data.ok) { say('ok', fmt(T.mail.sent, { email: r.data.to || '' })); b.textContent = T.mail.send; b.disabled = false; return; }
-      say('err', r.data && r.data.error === 'limit' ? T.mail.limit : T.mail.fail); b.textContent = T.mail.send; b.disabled = false;
-    }).catch(function () { say('err', T.mail.fail); b.textContent = T.mail.send; b.disabled = false; });
+      if (r.data && r.data.ok) {
+        // 버튼이 "✓ 보냈어요"로 바뀌고, 안내는 버튼 바로 아래에 나와요. 잠시 뒤 다시 보낼 수 있게 돌아가요
+        b.className = 'btn ghost sent'; b.textContent = T.mail.done;
+        mailSay('ok', fmt(T.mail.sent, { email: r.data.to || '' }));
+        setTimeout(mailReset, 4000);
+        return;
+      }
+      mailReset(); mailSay('err', r.data && r.data.error === 'limit' ? T.mail.limit : T.mail.fail);
+    }).catch(function () { mailReset(); mailSay('err', T.mail.fail); });
   }
   function showHistoryNote(saved) {
     $('history-note').hidden = !saved;
@@ -247,8 +255,20 @@
       .then(function (d) { if (d && d.ok) { (d.books || []).forEach(function (b) { state.onShelf[b.isbn13] = true; }); showShelfNote((d.books || []).length); } })
       .catch(function () {});
   }
+  // 추천 방식 선택: normal | near | far  → 서버에 보낼 값
+  function modeValue() { var r = document.querySelector('input[name=mode]:checked'); return r ? r.value : 'normal'; }
+  function modeBody() { var v = modeValue(); return v === 'normal' ? { mode: 'normal', distance: 'near' } : { mode: 'adventure', distance: v }; }
+  function setMode(v) {
+    var r = document.querySelector('input[name=mode][value=' + (v === 'near' || v === 'far' ? v : 'normal') + ']');
+    if (r) r.checked = true;
+    onMode();
+  }
+  function onMode() { var v = modeValue(); $('mode-hint').textContent = v === 'far' ? T.adventure.hintFar : v === 'near' ? T.adventure.hintNear : T.adventure.hintNormal; }
   function renderPicks(items) {
-    $('result-title').textContent = fmt(T.result.title, { lib: state.lib.n });
+    var adv = items.length && items[0].adventure === true;
+    state.resultMode = adv ? 'adventure' : 'normal';
+    $('adv-note').hidden = !adv;
+    $('result-title').textContent = fmt(adv ? T.adventure.resultTitle : T.result.title, { lib: state.lib.n });
     var ol = $('picks'); clear(ol);
     items.forEach(function (it) {
       var li = el('li', 'pick');
@@ -257,6 +277,7 @@
       li.appendChild(el('p', 'why', it.reason));
       var key = it.available === 'Y' ? 'Y' : it.available === 'N' ? 'N' : 'unknown';
       li.appendChild(el('span', 'badge ' + key, T.result[key]));
+      if (it.adventure && it.genre) li.appendChild(el('span', 'badge adv', fmt(T.adventure.badge, { genre: T.genre[it.genre] || '' })));
       li.appendChild(readButton(it));
       ol.appendChild(li);
     });
@@ -302,7 +323,7 @@
         if (!(d && d.ok && d.record && d.record.libCode)) { say('err', T.history.fromFail); return false; }
         var rec = d.record;
         applySaved({ libCode: rec.libCode, libName: rec.libName, ageGroup: rec.ageGroup, gender: rec.gender, genres: rec.genres, liked: rec.liked });
-        $('saved-banner').hidden = true; state.saved = null; $('save-prefs').checked = false;
+        $('saved-banner').hidden = true; state.saved = null; $('save-prefs').checked = false; setMode(rec.mode === 'adventure' ? 'near' : 'normal');
         if (!state.lib) { say('err', T.history.fromFail); return false; }
         $('chosen-lib').textContent = T.region.selected + ': ' + state.lib.n;
         go('taste', false); say('ok', T.history.fromLoaded);
@@ -350,11 +371,15 @@
   $('restart').addEventListener('click', function () {
     state.lib = null; state.genres = []; state.liked = []; renderPicked(); clear($('results')); $('q').value = '';
     var chips = $('genres').querySelectorAll('.chip'); for (var i = 0; i < chips.length; i++) chips[i].setAttribute('aria-pressed', 'false');
-    $('sido').value = ''; onSido(); say('', ''); $('save-prefs').checked = !!state.saved; go('region');
+    $('sido').value = ''; onSido(); setMode('normal'); say('', ''); $('save-prefs').checked = !!state.saved; go('region');
   });
   $('qbtn').addEventListener('click', doSearch);
   $('q').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
   $('submit').addEventListener('click', submit);
+  var modeRadios = document.querySelectorAll('input[name=mode]');
+  for (var mi = 0; mi < modeRadios.length; mi++) modeRadios[mi].addEventListener('change', onMode);
+  // 결과 화면에서 같은 조건으로 바로 모험: 이미 모험 방식이면 그 강도를, 아니면 가까운 모험으로
+  $('to-adv').addEventListener('click', function () { if (modeValue() === 'normal') setMode('near'); submit(); });
   $('mail-send').addEventListener('click', sendMail);
   $('use-saved').addEventListener('click', function () { if (state.lib && state.genres.length) submit(); });
 

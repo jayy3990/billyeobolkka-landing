@@ -58,10 +58,24 @@
   .badge.N { background:#fff4d6; color:#7a4b00; }
   .badge.unknown { background:#eceef6; color:#3b4157; }
   .notice { margin-top:18px; padding:14px 16px; border-radius:12px; background:var(--soft); color:var(--text); font-size:15px; line-height:1.6; }
+  .modes { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .modes label.mode { display:flex; align-items:center; gap:8px; margin:0; min-height:44px; padding:8px 16px; border:2px solid var(--line); border-radius:999px; background:#fff; font-weight:700; font-size:16px; cursor:pointer; }
+  .modes label.mode input { width:18px; height:18px; accent-color:var(--primary); }
+  .modes label.mode:has(input:checked) { border-color:var(--primary); background:var(--soft); color:var(--primary); }
+  .modes label.mode:has(input:focus-visible) { outline:3px solid var(--primary); outline-offset:2px; }
+  .badge.adv { background:#ede9fe; color:#4c1d95; margin-left:6px; }
   .check { display:flex; gap:10px; align-items:flex-start; margin-top:20px; font-weight:700; cursor:pointer; }
   .check input { flex:none; width:22px; height:22px; margin-top:3px; accent-color:var(--primary); }
   .pick .readbtn { margin-top:12px; margin-left:8px; min-height:34px; padding:0 14px; border-radius:999px; border:2px solid var(--primary); background:var(--surface); color:var(--primary); font:inherit; font-size:14px; font-weight:800; cursor:pointer; }
   .pick .readbtn:disabled { opacity:.6; cursor:default; }
+  .inline-msg { margin-top:12px; padding:12px 14px; border-radius:12px; font-weight:700; font-size:15px; line-height:1.5; }
+  .inline-msg.ok { background:#e6f6ec; color:#14532d; }
+  .inline-msg.err { background:#fdecec; color:#7f1d1d; }
+  .btn.busy, .btn.sent { position:relative; }
+  .btn.busy { opacity:.85; cursor:progress; }
+  .btn.busy::before { content:""; display:inline-block; width:16px; height:16px; margin-right:8px; vertical-align:-3px; border-radius:50%; border:3px solid var(--soft); border-top-color:var(--primary); animation:spin 1s linear infinite; }
+  .btn.sent { background:#e6f6ec; border-color:#14532d; color:#14532d; }
+  @media (prefers-reduced-motion: reduce) { .btn.busy::before { animation:none; } }
   #saved-banner { margin:0 0 16px; }
   #saved-banner .actions { margin-top:12px; }
   #result-title { margin-top:22px; }
@@ -110,6 +124,15 @@
       <div class="chips" id="genres"></div>
     </fieldset>
     <fieldset>
+      <legend>{{rec.adventure.label}}</legend>
+      <div class="modes" id="modes" role="radiogroup" aria-label="{{rec.adventure.label|attr}}">
+        <label class="mode"><input type="radio" name="mode" value="normal" checked><span>{{rec.adventure.normal}}</span></label>
+        <label class="mode"><input type="radio" name="mode" value="near"><span>{{rec.adventure.near}}</span></label>
+        <label class="mode"><input type="radio" name="mode" value="far"><span>{{rec.adventure.far}}</span></label>
+      </div>
+      <p class="hint" id="mode-hint">{{rec.adventure.hintNormal}}</p>
+    </fieldset>
+    <fieldset>
       <legend>{{rec.taste.liked}}</legend>
       <p class="hint">{{rec.taste.likedHint}}</p>
       <div class="searchrow">
@@ -141,13 +164,16 @@
     <h2 id="result-title" tabindex="-1"></h2>
     <ol class="picks" id="picks"></ol>
     <p class="notice">{{rec.result.notice}}<br>{{rec.result.ai}}</p>
+    <p class="notice" id="adv-note" hidden>{{rec.adventure.note}}</p>
     <p class="hint" id="history-note" hidden><a href="{{$history}}">{{rec.history.link}}</a></p>
     <div class="actions" id="mail-box" hidden>
       <button class="btn ghost" id="mail-send" type="button">{{rec.mail.send}}</button>
     </div>
+    <p class="inline-msg" id="mail-msg" role="status" aria-live="polite" hidden></p>
     <p class="hint" id="mail-hint" hidden></p>
     <div class="actions">
       <button class="btn ghost" id="to-taste2" type="button">{{rec.result.again}}</button>
+      <button class="btn ghost" id="to-adv" type="button">{{rec.adventure.again}}</button>
       <button class="btn" id="restart" type="button">{{rec.result.restart}}</button>
     </div>
   </div>

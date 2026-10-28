@@ -105,7 +105,7 @@ test("buildRow: user_id는 인자(로그인 정보)에서만, 글자 수 제한�
   const big = { ...out, items: Array.from({ length: 12 }, (_, i) => ({ isbn13: "97890000" + (10000 + i), title: "제목".repeat(60), author: "저자".repeat(40), reason: "이유".repeat(400) + "<script>", available: "Y", bookImageURL: "https://img/x.jpg", extra: "x" })) };
   const r = history.buildRow("u1", { ...input, user_id: "attacker", memo: "x" }, big);
   assert.equal(r.user_id, "u1");
-  assert.deepEqual(Object.keys(r).sort(), ["age_group", "gender", "genres", "items", "lang", "lib_code", "liked", "user_id"]);
+  assert.deepEqual(Object.keys(r).sort(), ["age_group", "gender", "genres", "items", "lang", "lib_code", "liked", "mode", "user_id"]);
   assert.equal(r.items.length, 8, "최대 8권");
   for (const it of r.items) {
     assert.ok(it.title.length <= 80 && it.author.length <= 40 && it.reason.length <= 300);

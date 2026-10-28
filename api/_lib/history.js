@@ -8,7 +8,8 @@ const { clean } = require("./recommend-core");
 
 const TABLE = "recommendation_history";
 const KEEP = 30; // 사용자당 보관하는 최근 기록 수
-const COLUMNS = "id, created_at, lang, lib_code, age_group, gender, genres, liked, items";
+const COLUMNS = "id, created_at, lang, lib_code, age_group, gender, genres, liked, items, mode";
+const GENRE_IDS = Object.keys(require("./recommend-config").GENRES);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isUuid = (v) => typeof v === "string" && UUID.test(v);
 
@@ -18,6 +19,7 @@ function buildRow(uid, input, out) {
   return {
     user_id: uid,
     lang: input.lang === "en" ? "en" : "ko",
+    mode: input.mode === "adventure" ? "adventure" : "normal",
     lib_code: input.libCode,
     age_group: input.ageGroup,
     gender: input.gender,
@@ -29,6 +31,7 @@ function buildRow(uid, input, out) {
       author: clean(it.author, 40),
       reason: clean(it.reason, 300),
       available: it.available === "Y" || it.available === "N" ? it.available : null,
+      ...(GENRE_IDS.includes(it.genre) ? { genre: it.genre } : {}),
     })),
   };
 }
@@ -59,6 +62,7 @@ function toClient(row) {
     id: String(row.id),
     createdAt: row.created_at,
     lang: row.lang === "en" ? "en" : "ko",
+    mode: row.mode === "adventure" ? "adventure" : "normal",
     libCode: lib ? row.lib_code : null,
     libName: lib ? lib.n : null,
     libSido: lib ? lib.s : null,
@@ -70,8 +74,25 @@ function toClient(row) {
     items: items.slice(0, 8).map((it) => ({
       isbn13: String(it.isbn13 || ""), title: String(it.title || ""), author: String(it.author || ""),
       reason: String(it.reason || ""), available: it.available === "Y" || it.available === "N" ? it.available : null,
+      genre: GENRE_IDS.includes(it.genre) ? it.genre : null,
     })),
   };
 }
 
-module.exports = { TABLE, KEEP, COLUMNS, isUuid, buildRow, save, toClient };
+// 모험 추천에서 최근에 추천한 책을 다시 내지 않으려고, 내 최근 기록의 책(최대 KEEP건)을 읽어요. 실패하면 빈 목록(추천은 계속해요)
+async function recentBooks(supabase, uid) {
+  try {
+    const r = await supabase.from(TABLE).select("items").eq("user_id", uid).order("created_at", { ascending: false }).limit(KEEP);
+    if (r.error) { console.error("history 최근 책 조회 실패", r.error.code); return []; }
+    const out = [];
+    for (const row of r.data || []) for (const it of Array.isArray(row.items) ? row.items : []) {
+      if (it && /^\d{13}$/.test(String(it.isbn13))) out.push({ isbn13: String(it.isbn13), title: String(it.title || ""), author: String(it.author || "") });
+    }
+    return out;
+  } catch (e) {
+    console.error("history 최근 책 오류", e && e.message);
+    return [];
+  }
+}
+
+module.exports = { TABLE, KEEP, COLUMNS, isUuid, buildRow, save, toClient, recentBooks };

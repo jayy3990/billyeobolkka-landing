@@ -294,3 +294,33 @@ Vercel → 프로젝트 → **Settings → Environment Variables**에 추가한 
 
 ## 개인정보 메모
 - 메일에는 추천 기록(도서관 이름·책 정보)만 들어가요. 연령대·성별·이메일 주소 전체는 메일 본문에 넣지 않아요.
+
+
+# 모험 하기
+
+내가 고른 장르 밖의 책을 추천받는 기능이에요. 같은 취향의 책만 계속 만나는 것을 막아요.
+
+## 어떻게 동작하나요
+- **고르는 법**: 추천 화면 취향 단계의 "추천 방식" — 일반 추천 / **가까운 모험** / **먼 모험**. 결과 화면의 "이 조건으로 모험하기" 버튼으로 바로 모험할 수도 있어요. 추천 기록의 "이 조건으로 다시 추천"은 모험 기록이면 가까운 모험으로 채워요.
+- **후보 만들기(정보나루)**: 내가 고른 장르(= "내 취향")는 그대로 두고, 그 밖의 **낯선 장르 2개**를 무작위로 골라 그 도서관의 인기 대출·신착 책을 가져와요. 가까운 모험은 `ADVENTURE_NEAR`(recommend-config.js)에 적힌 인접 장르에서, 먼 모험은 인접도 아닌 장르에서 골라요(장르를 여러 개 고르면 먼 장르가 부족할 수 있어 나머지로 채워요). 내 장르에 해당하는 책, 서재의 읽은 책, **최근 추천 기록(최대 30건)의 책**은 후보에서 빠져요. 장르마다 후보 상한을 나눠서 한 장르가 독차지하지 못해요.
+- **Claude의 일**: 낯선 후보 중 내 취향(관심 장르·좋아한 책·서재 평가)과 이어질 만한 책을 골라 "다리"를 놓고, 추천 이유에 "취향과 이어지는 점"을 써요. 서로 다른 낯선 장르 2개 이상에서 고르게 하고, 서버가 확인해서 한 장르로 몰리면 한 번 다시 시도해요(그래도 안 되면 처음 결과를 써요). 후보 번호·제목 일치 검증은 일반 추천과 같아요.
+- **후보가 모자라면**: 낯선 장르를 4개까지 넓히고 성별·연령 조건도 풀어요. 그래도 5권 미만이면 "추천할 책이 충분하지 않아요"가 나오고 횟수는 차감되지 않아요.
+- **횟수·비용**: 일반 추천과 같은 하루 5회에 포함돼요. 정보나루 호출은 낯선 장르의 분류별 인기·신착 조회라서 일반 추천과 비슷하고, 같은 도서관·분류·성별·연령 조회는 캐시돼요.
+- **표시·기록**: 모험 책에는 "🧭 모험 · 과학" 같은 표시가 붙고, 추천 기록에는 `mode=adventure`와 책별 낯선 장르가 저장돼 `/history`에도 표시돼요.
+- **DB**: `recommendation_history.mode`('normal'/'adventure') 칸 추가. 값은 CHECK로 막고, 추가(insert) 권한만 줘요(수정 권한 없음). 기존 기록은 모두 'normal'.
+
+## 내가 직접 해야 하는 설정
+- [ ] **Supabase SQL**: SQL Editor에서 `supabase/migrations/20261030000000_history_mode.sql` 전체를 붙여 넣고 Run → `Success. No rows returned`.
+  - 확인 1: `select column_name, column_default from information_schema.columns where table_name = 'recommendation_history' and column_name = 'mode';` → `'normal'::text`
+  - 확인 2: `select pg_get_constraintdef(oid) from pg_constraint where conname = 'recommendation_history_mode_check';` → `normal`, `adventure` 두 가지
+  - 확인 3: `select privilege_type from information_schema.column_privileges where table_name = 'recommendation_history' and column_name = 'mode' and grantee = 'authenticated';` → `INSERT`와 `SELECT`만(UPDATE 없음)
+- [ ] **SQL을 먼저 실행한 뒤에** 배포해요. 순서가 바뀌면 추천 기록 저장·`/history` 조회가 실패해요(추천 자체는 돼요).
+- 환경변수는 새로 필요 없어요.
+
+## 시나리오 시험 (배포 후)
+1. `/recommend` → 도서관·장르(예: 소설) 선택 → 추천 방식 **가까운 모험** → 추천 받기: 결과 제목이 "…에서 떠나는 모험", 책마다 "🧭 모험 · 역사" 같은 표시, 선택한 장르(소설)가 아닌 책들.
+2. 같은 조건으로 **먼 모험**: 더 동떨어진 장르(예: 과학·경제·IT)에서 나와요.
+3. 결과 화면 **이 조건으로 모험하기**를 누를 때마다 다른 낯선 장르·다른 책이 나와요(최근 추천한 책은 반복되지 않아요).
+4. `/history`: 모험 기록에 "🧭 모험 추천" 표시와 책별 장르 표시. "이 조건으로 다시 추천"은 가까운 모험으로 채워져요.
+5. 일반 추천은 이전과 똑같이 동작하고 표시가 없어요.
+6. 영어: `/en/recommend`, `/en/history`.

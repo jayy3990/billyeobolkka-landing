@@ -23,6 +23,16 @@
   .badge.unknown { background:#eceef6; color:#3b4157; }
   .readbtn { margin-top:8px; margin-left:8px; min-height:32px; padding:0 12px; border-radius:999px; border:2px solid var(--primary); background:var(--surface); color:var(--primary); font:inherit; font-size:13px; font-weight:800; cursor:pointer; }
   .readbtn:disabled { opacity:.6; cursor:default; }
+  .inline-msg { margin-top:12px; padding:12px 14px; border-radius:12px; font-weight:700; font-size:15px; line-height:1.5; }
+  .inline-msg.ok { background:#e6f6ec; color:#14532d; }
+  .inline-msg.err { background:#fdecec; color:#7f1d1d; }
+  .btn.busy, .btn.sent { position:relative; }
+  .btn.busy { opacity:.85; cursor:progress; }
+  .btn.busy::before { content:""; display:inline-block; width:16px; height:16px; margin-right:8px; vertical-align:-3px; border-radius:50%; border:3px solid var(--soft); border-top-color:var(--primary); animation:spin 1s linear infinite; }
+  .btn.sent { background:#e6f6ec; border-color:#14532d; color:#14532d; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .btn.busy::before { animation:none; } }
+  .badge.adv { background:#ede9fe; color:#4c1d95; margin-left:6px; }
   .note { margin-top:10px; color:var(--muted); font-size:14px; }
   .rec-card .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
   .rec-card .actions .btn { margin-top:0; flex:1; min-width:150px; }
@@ -53,6 +63,7 @@
 <script>
   window.HIST_T = { t: {{hist|json}}, age: {{rec.age|json}}, gender: {{rec.gender|json}}, genre: {{rec.genre|json}}, result: {{rec.result|json}} };
   window.HIST_SHELF = {{rec.shelf|json}};
+  window.HIST_ADV = {{rec.adventure|json}};
   window.HIST_MAIL = {{rec.mail|json}};
   window.HIST_LANG = {{$lang|json}};
   window.HIST_RECOMMEND = {{$recommend|json}};

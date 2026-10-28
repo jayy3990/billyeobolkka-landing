@@ -45,7 +45,25 @@ const LIMITS = {
   minPool: 15, // 이보다 적으면 성별·연령 조건을 풀어서 다시 가져와요
   recommendMin: 3, // 검증 후 이만큼은 있어야 결과로 인정
   recommendMax: 8,
+  adventureGenres: 2, // 모험 때 한 번에 가져오는 낯선 장르 수
+  adventureWide: 4, // 후보가 모자랄 때 넓히는 낯선 장르 수
+  adventureMinGenres: 2, // 모험 결과에 섞여야 하는 서로 다른 장르 수(후보가 허용하는 범위에서)
   loanMonths: 12, // 인기대출 집계 기간(개월). 정보나루 권장: 최소 3개월
+};
+
+// 모험 하기: 장르별 "가까운(인접)" 장르. 가까운 모험은 여기서, 먼 모험은 그 밖의 장르에서 골라요.
+const ADVENTURE_NEAR = {
+  novel: ["essay", "history", "humanities", "poetry"],
+  poetry: ["essay", "novel", "art", "humanities"],
+  essay: ["novel", "humanities", "psychology", "art"],
+  humanities: ["psychology", "history", "society", "essay"],
+  psychology: ["humanities", "essay", "society", "economy"],
+  economy: ["society", "psychology", "tech", "history"],
+  society: ["economy", "history", "humanities", "psychology"],
+  science: ["tech", "humanities", "history", "economy"],
+  tech: ["science", "economy", "art", "society"],
+  art: ["history", "humanities", "essay", "poetry"],
+  history: ["society", "humanities", "art", "novel"],
 };
 
 // 장서에서 제외할 독자 대상(ISBN 부가기호): 5·6 학습참고서, 7 아동
@@ -53,4 +71,4 @@ const EXCLUDED_ADD_CODES = ["5", "6", "7"];
 // 인기대출 조회에 쓰는 부가기호: 0 교양, 1 실용, 2 여성, 4 청소년, 9 전문
 const ADULT_ADD_CODES = "0;1;2;4;9";
 
-module.exports = { AGE_GROUPS, GENDERS, GENRES, LIMITS, EXCLUDED_ADD_CODES, ADULT_ADD_CODES };
+module.exports = { AGE_GROUPS, GENDERS, GENRES, ADVENTURE_NEAR, LIMITS, EXCLUDED_ADD_CODES, ADULT_ADD_CODES };

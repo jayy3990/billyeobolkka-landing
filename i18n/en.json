@@ -399,7 +399,22 @@
       "limit": "You've used today's 5 emails. Please try again tomorrow.",
       "fail": "Couldn't send the email. Please try again in a moment.",
       "needHistory": "To get these by email, turn on \"Keep these picks in my history\" before getting picks.",
-      "hint": "Sends these picks to the email you signed up with."
+      "hint": "Sends these picks to the email you signed up with.",
+      "done": "✓ Sent"
+    },
+    "adventure": {
+      "label": "Pick style",
+      "normal": "Regular picks",
+      "near": "Close adventure",
+      "far": "Far adventure",
+      "hintNormal": "Picks books that match your taste.",
+      "hintNear": "Picks from unfamiliar genres close to the ones you chose, so you meet new books that still connect to your taste.",
+      "hintFar": "Picks from genres far from the ones you chose, so you meet books you wouldn't usually read.",
+      "resultTitle": "An adventure from {lib}",
+      "badge": "🧭 Adventure · {genre}",
+      "again": "🧭 Go on an adventure with these choices",
+      "note": "Adventure picks come from outside the genres you chose. They may not match your taste, but they can lead you to something new. Books you've read or were recently picked won't appear.",
+      "historyBadge": "🧭 Adventure picks"
     }
   },
   "prefs": {
