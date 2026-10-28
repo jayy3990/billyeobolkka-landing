@@ -75,7 +75,8 @@
         "title": "What's different",
         "body": "Set your interests once, and AI recommends books that fit."
       },
-      "ctaRecommend": "Get recommendations"
+      "ctaRecommend": "Get recommendations",
+      "ctaDemo": "Try it now"
     },
     "service": {
       "tag": "Service",
@@ -265,7 +266,22 @@
         "link": "This link has expired or is invalid. Please try again.",
         "net": "Please check your connection and try again.",
         "generic": "Something went wrong. Please try again in a moment."
+      },
+      "demo": {
+        "sending": "Signing in to the demo account...",
+        "fail": "Couldn't sign in to the demo account. Please try again in a moment."
       }
+    },
+    "demo": {
+      "button": "Start with the demo account",
+      "hint": "This is the demo account for the competition. Press it after the check above is done.",
+      "cta": "Try it now",
+      "accountTitle": "You're using the demo account",
+      "accountLead": "This shared demo account shows its bookshelf, history, and settings to everyone. When you're done, please clear them for the next person.",
+      "reset": "Clear demo data",
+      "resetConfirm": "Clear the demo account's bookshelf, history, and settings?",
+      "resetDone": "Demo data cleared.",
+      "resetFail": "Couldn't clear it. Please try again in a moment."
     }
   },
   "rec": {
@@ -396,7 +412,7 @@
       "send": "Email me",
       "sending": "Sending...",
       "sent": "Sent to {email}. Please check your inbox (and spam folder).",
-      "limit": "You've used today's 5 emails. Please try again tomorrow.",
+      "limit": "You've used all of today's emails. Please try again tomorrow.",
       "fail": "Couldn't send the email. Please try again in a moment.",
       "needHistory": "To get these by email, turn on \"Keep these picks in my history\" before getting picks.",
       "hint": "Sends these picks to the email you signed up with.",

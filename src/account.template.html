@@ -6,6 +6,9 @@
   .prefs dd { margin:0; word-break:keep-all; }
   .prefs .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
   .prefs .actions .btn { margin-top:0; flex:1; min-width:150px; }
+  .inline-msg { margin-top:14px; padding:12px 14px; border-radius:12px; font-weight:700; }
+  .inline-msg.ok { background:var(--ok-bg); color:var(--ok-text); }
+  .inline-msg.err { background:var(--err-bg); color:var(--err-text); }
   #prefs-msg { margin-top:14px; padding:12px 14px; border-radius:12px; font-weight:700; display:none; }
   #prefs-msg.ok { display:block; background:var(--ok-bg); color:var(--ok-text); }
   #prefs-msg.err { display:block; background:var(--err-bg); color:var(--err-text); }
@@ -45,11 +48,21 @@
     <p class="hint">{{hist.accountLead}}</p>
     <div class="actions"><a class="btn ghost" href="{{$history}}">{{hist.accountOpen}}</a></div>
   </div>
+  <div class="card prefs" id="demo-card" hidden>
+    <h2>{{auth.demo.accountTitle}}</h2>
+    <p class="hint">{{auth.demo.accountLead}}</p>
+    <div class="actions"><button class="btn ghost" id="demo-reset" type="button">{{auth.demo.reset}}</button></div>
+    <div id="demo-msg" class="inline-msg" role="status" aria-live="polite" hidden></div>
+  </div>
   <button class="btn ghost" type="button" data-auth-logout>{{auth.account.logout}}</button>
   <p class="links"><a href="{{$home}}">{{auth.account.toHome}}</a></p>
 </div></section>
 <script>
   window.PREF_T = { t: {{prefs|json}}, age: {{rec.age|json}}, gender: {{rec.gender|json}}, genre: {{rec.genre|json}} };
 </script>
+<script>
+  window.DEMO_T = { confirm: {{auth.demo.resetConfirm|json}}, done: {{auth.demo.resetDone|json}}, fail: {{auth.demo.resetFail|json}} };
+</script>
 <script src="/prefs.js" defer></script>
+<script src="/demo.js" defer></script>
 {{> authbottom}}

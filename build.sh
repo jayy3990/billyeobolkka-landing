@@ -14,5 +14,7 @@ url=$(get SUPABASE_URL); key=$(get SUPABASE_ANON_KEY)
 [ -z "$url" ] || [ -z "$key" ] && { echo "SUPABASE_URL 또는 SUPABASE_ANON_KEY가 비어 있어요" >&2; exit 1; }
 # Turnstile 사이트 키는 공개용이에요 (시크릿 키는 여기에 넣지 않아요). 없으면 빈 값
 tskey=$(get TURNSTILE_SITE_KEY | tr -cd 'A-Za-z0-9_-')
-printf 'window.SUPABASE_URL = "%s";\nwindow.SUPABASE_ANON_KEY = "%s";\nwindow.TURNSTILE_SITE_KEY = "%s";\n' "$url" "$key" "$tskey" > "$here/config.js"
+# 체험 로그인 버튼을 보여 줄지(true/false)만 알려요. 이메일·비밀번호는 절대 여기에 넣지 않아요 (서버 환경변수에만 있어요)
+if [ -n "$(get DEMO_EMAIL)" ] && [ -n "$(get DEMO_PASSWORD)" ]; then demo=true; else demo=false; fi
+printf 'window.SUPABASE_URL = "%s";\nwindow.SUPABASE_ANON_KEY = "%s";\nwindow.TURNSTILE_SITE_KEY = "%s";\nwindow.DEMO_ENABLED = %s;\n' "$url" "$key" "$tskey" "$demo" > "$here/config.js"
 echo "config.js 만들었어요"

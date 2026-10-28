@@ -9,6 +9,10 @@
     <input id="password" name="password" type="password" autocomplete="current-password" maxlength="200" required>
     <div class="captcha" data-turnstile aria-label="{{auth.common.captchaLabel|attr}}"></div>
     <button class="btn" id="submit" type="submit">{{auth.login.submit}}</button>
+    <div id="demo-box" hidden>
+      <button class="btn ghost" id="demo-btn" type="button">{{auth.demo.button}}</button>
+      <p class="hint">{{auth.demo.hint}}</p>
+    </div>
     <div id="msg" role="alert" aria-live="polite"></div>
     <p class="hint">{{auth.login.unconfirmedHint}}</p>
   </form>

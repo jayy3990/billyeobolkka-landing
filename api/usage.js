@@ -9,7 +9,10 @@ module.exports = async (req, res) => {
     if (error || !data || !data.user) return A.fail(res, 401, "auth");
     const rs = await supabase.rpc("usage_remaining", { p_kind: "recommend" });
     if (rs.error || typeof rs.data !== "number") return A.fail(res, 500, "server");
-    return A.send(res, 200, { ok: true, remaining: rs.data, limit: 5 });
+    // 내 하루 한도(체험 계정은 더 높아요). 못 읽으면 기본값 5
+    const lm = await supabase.rpc("usage_limit", { p_kind: "recommend" });
+    const limit = !lm.error && typeof lm.data === "number" ? lm.data : 5;
+    return A.send(res, 200, { ok: true, remaining: rs.data, limit });
   } catch (e) {
     return A.fail(res, 500, "server");
   }

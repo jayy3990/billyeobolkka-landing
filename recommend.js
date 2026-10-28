@@ -7,7 +7,7 @@
 (function () {
   'use strict';
   var T = window.REC_T || {}, LANG = window.REC_LANG || 'ko';
-  var MAX_GENRES = 3, MAX_LIKED = 3, MAX_REMAIN = 5;
+  var MAX_GENRES = 3, MAX_LIKED = 3, MAX_REMAIN = 5; // MAX_REMAIN: 서버가 알려 주는 내 하루 한도로 바뀌어요
   var $ = function (id) { return document.getElementById(id); };
   var state = { resultMode: 'normal', shelfCount: 0, historyId: null, onShelf: {}, data: null, sido: '', gu: '', lib: null, genres: [], liked: [], busy: false, saved: null };
 
@@ -46,7 +46,7 @@
   function loadUsage() {
     fetch('/api/usage', { credentials: 'same-origin', cache: 'no-store' })
       .then(function (r) { return r.json(); })
-      .then(function (d) { if (d && d.ok && typeof d.remaining === 'number') showRemaining(d.remaining); })
+      .then(function (d) { if (d && d.ok && typeof d.remaining === 'number') { if (typeof d.limit === 'number') MAX_REMAIN = d.limit; showRemaining(d.remaining); } })
       .catch(function () {});
   }
 

@@ -126,6 +126,29 @@
 
     if (needsCaptcha) window.BBTurnstile.mount(form.querySelector('[data-turnstile]'));
 
+    // 대회 체험 로그인: 서버가 체험 계정으로 로그인시켜요 (비밀번호는 화면에 없어요). 사람 확인(Turnstile)은 똑같이 필요해요.
+    var demoBox = form.querySelector('#demo-box'), demoBtn = form.querySelector('#demo-btn');
+    if (demoBox && demoBtn && window.DEMO_ENABLED) {
+      demoBox.hidden = false;
+      var DT = T.demo || {}, demoText = demoBtn.textContent, demoBusy = false;
+      demoBtn.addEventListener('click', function () {
+        if (demoBusy) return;
+        show('', '');
+        var token = window.BBTurnstile.enabled() ? window.BBTurnstile.token() : '';
+        if (window.BBTurnstile.enabled() && !token) return show('err', errText('captcha'));
+        demoBusy = true; demoBtn.disabled = true; demoBtn.textContent = DT.sending || '...';
+        post('/api/auth/demo', { lang: LANG, captchaToken: token }).then(function (d) {
+          if (d && d.ok) { location.href = d.redirect || U.account || '/'; return; }
+          show('err', d && d.error && d.error !== 'server' ? errText(d.error) : (DT.fail || errText('generic')));
+          demoBusy = false; demoBtn.disabled = false; demoBtn.textContent = demoText;
+          window.BBTurnstile.reset();
+        }).catch(function () {
+          show('err', errText('net')); demoBusy = false; demoBtn.disabled = false; demoBtn.textContent = demoText; window.BBTurnstile.reset();
+        });
+      });
+      if (new URLSearchParams(location.search).get('demo')) setTimeout(function () { demoBtn.focus(); }, 300);
+    }
+
     // 메일 링크가 잘못됐을 때(?error=link) 안내
     var q = new URLSearchParams(location.search);
     if (q.get('error') === 'link') show('err', errText('link'));
