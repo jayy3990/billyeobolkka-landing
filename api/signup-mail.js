@@ -74,13 +74,13 @@ module.exports = async (req, res) => {
   const from = getEnv("CONTACT_FROM_EMAIL") || m.defaultFrom;
   const safeName = esc(name);
 
-  const html = `<!doctype html><html lang="${lang}"><body style="margin:0;background:#f6f7fb;font-family:'Malgun Gothic','Noto Sans KR',Arial,sans-serif;color:#1d2230;">
+  const html = `<!doctype html><html lang="${lang}"><body style="margin:0;background:#f4f8f4;font-family:'Malgun Gothic','Noto Sans KR',Arial,sans-serif;color:#1d2230;">
 <div style="max-width:520px;margin:0 auto;padding:32px 20px;">
-  <div style="background:#4f46e5;color:#ffffff;border-radius:16px 16px 0 0;padding:24px 28px;font-size:22px;font-weight:800;">📖 ${m.brand}</div>
+  <div style="background:#1f6b4f;color:#ffffff;border-radius:16px 16px 0 0;padding:24px 28px;font-size:22px;font-weight:800;">📖 ${m.brand}</div>
   <div style="background:#ffffff;border-radius:0 0 16px 16px;padding:28px;line-height:1.7;font-size:17px;">
     <p style="margin:0 0 14px;font-size:20px;font-weight:800;">${m.hello(safeName)}</p>
     <p style="margin:0 0 14px;">${m.body}</p>
-    <p style="margin:0;color:#4f46e5;font-weight:800;">${m.slogan}</p>
+    <p style="margin:0;color:#1f6b4f;font-weight:800;">${m.slogan}</p>
   </div>
   <p style="margin:16px 4px 0;color:#5b6275;font-size:13px;">${m.footer}</p>
 </div></body></html>`;

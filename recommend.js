@@ -271,7 +271,7 @@
     $('result-title').textContent = fmt(adv ? T.adventure.resultTitle : T.result.title, { lib: state.lib.n });
     var ol = $('picks'); clear(ol);
     items.forEach(function (it) {
-      var li = el('li', 'pick');
+      var li = el('li', 'pick' + (it.adventure ? ' adv' : ''));
       li.appendChild(el('h3', '', it.title));
       if (it.author) li.appendChild(el('p', 'by', it.author));
       li.appendChild(el('p', 'why', it.reason));

@@ -73,7 +73,7 @@
 
     var ol = el('ol', 'picks');
     (r.items || []).forEach(function (it) {
-      var li = el('li', 'pick');
+      var li = el('li', 'pick' + (it.genre ? ' adv' : ''));
       li.appendChild(el('h3', '', it.title));
       if (it.author) li.appendChild(el('p', 'by', it.author));
       if (it.reason) li.appendChild(el('p', 'why', it.reason));

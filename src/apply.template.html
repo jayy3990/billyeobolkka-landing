@@ -4,56 +4,59 @@
 {{$seo}}
 {{$fontLink}}
 {{> authearly}}
+{{> theme}}
 <style>
-  :root { --primary:#4f46e5; --soft:#e8e7fd; --hi:#fbbf24; --text:#1d2230; --muted:#5b6275; --bg:#f6f7fb; --surface:#fff; --line:#d9dce8; }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { font-family:{{$font}}; color:var(--text); background:var(--bg); line-height:1.6; font-size:18px; word-break:keep-all; overflow-wrap:break-word; }
   .wrap { max-width:720px; margin:0 auto; padding:0 20px; }
   section { padding:64px 0; }
   header { padding:20px 0; }
   header .wrap { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-  .brand { display:flex; align-items:center; gap:12px; font-size:24px; font-weight:800; margin-right:auto; }
+  .brand { display:flex; align-items:center; gap:12px; font-size:24px; font-weight:800; color:var(--deep); margin-right:auto; }
   .brand svg { flex:none; width:48px; height:48px; }
   .auth-slot { display:inline-flex; align-items:center; gap:8px; }
-  .auth-slot a, .auth-slot button { display:inline-flex; align-items:center; min-height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--text); font:inherit; font-size:16px; font-weight:700; text-decoration:none; cursor:pointer; }
+  .auth-slot a, .auth-slot button { display:inline-flex; align-items:center; min-height:44px; padding:0 16px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--text); font:inherit; font-size:16px; font-weight:700; text-decoration:none; cursor:pointer; }
   .captcha { margin-top:18px; }
   .back { display:inline-flex; align-items:center; min-height:44px; color:var(--primary); font-weight:800; text-decoration:none; }
-  .lang { display:inline-flex; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--surface); }
+  .lang { display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--surface); }
   .lang a { display:flex; align-items:center; justify-content:center; min-width:44px; min-height:42px; padding:0 8px; color:var(--text); text-decoration:none; font-weight:700; font-size:15px; }
-  .lang a[aria-current] { background:var(--primary); color:#fff; }
+  .lang a[aria-current] { background:var(--primary); color:var(--on-primary); }
   .tag { display:inline-block; padding:6px 16px; border-radius:999px; background:var(--soft); color:var(--primary); font-weight:800; font-size:16px; }
   h1 { font-size:clamp(34px,9vw,56px); line-height:1.2; font-weight:800; letter-spacing:-1px; margin-top:16px; }
   h2 { font-size:clamp(26px,7vw,40px); line-height:1.25; font-weight:800; margin-top:12px; }
+  h1, h2 { color:var(--deep); }
   em { font-style:normal; color:var(--primary); }
   p.lead { margin-top:16px; font-size:20px; color:var(--muted); }
   .hero { padding:40px 0 64px; }
-  .btn { display:inline-block; margin-top:28px; padding:16px 28px; border-radius:14px; background:var(--primary); color:#fff; font-size:20px; font-weight:800; text-decoration:none; border:0; cursor:pointer; font-family:inherit; text-align:center; }
+  .btn { display:inline-block; margin-top:28px; padding:16px 28px; border-radius:999px; background:var(--primary); color:var(--on-primary); font-size:20px; font-weight:800; text-decoration:none; border:0; cursor:pointer; font-family:inherit; text-align:center; }
   .btn:disabled { opacity:.6; cursor:wait; }
   .btn:focus-visible, input:focus-visible, a:focus-visible { outline:3px solid var(--hi); outline-offset:2px; }
   .card { margin-top:20px; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:22px 24px; }
   .steps { list-style:none; margin-top:20px; display:grid; gap:14px; }
-  .steps li { display:flex; gap:16px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:18px 20px; }
-  .steps .n { flex:none; width:44px; height:44px; border-radius:50%; background:var(--primary); color:#fff; font-weight:800; font-size:22px; display:flex; align-items:center; justify-content:center; }
+  .steps li { display:flex; gap:16px; align-items:center; background:var(--surface); border:1px solid var(--line); border-left:8px solid var(--primary); border-radius:16px; padding:18px 20px; }
+  .steps .n { flex:none; width:44px; height:44px; border-radius:50%; background:var(--primary); color:var(--on-primary); font-weight:800; font-size:22px; display:flex; align-items:center; justify-content:center; }
   .steps b { display:block; font-size:20px; }
   .steps span { color:var(--muted); font-size:17px; }
-  .band { background:var(--primary); color:#fff; }
-  .band .tag { background:#fff; }
+  .band { background:var(--band-bg); color:var(--band-text); }
+  .band .tag { background:var(--surface); }
+  .band h1, .band h2 { color:var(--band-text); }
   .band em { color:var(--hi); }
-  .band p.lead { color:var(--soft); }
+  .band p.lead { color:var(--band-sub); }
   label { display:block; margin-top:18px; font-weight:800; }
-  input[type=text], input[type=email] { width:100%; margin-top:6px; padding:14px 16px; font-size:18px; font-family:inherit; border:2px solid var(--line); border-radius:12px; background:#fff; color:var(--text); }
+  input[type=text], input[type=email] { width:100%; margin-top:6px; padding:14px 16px; font-size:18px; font-family:inherit; border:2px solid var(--line); border-radius:12px; background:var(--surface); color:var(--text); }
   .check { display:flex; gap:10px; align-items:flex-start; margin-top:18px; font-weight:400; color:var(--muted); font-size:16px; }
   .check input { flex:none; width:22px; height:22px; margin-top:3px; }
   .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
   #msg { margin-top:18px; padding:14px 16px; border-radius:12px; font-weight:700; display:none; }
-  #msg.ok { display:block; background:#e6f6ec; color:#14532d; }
-  #msg.err { display:block; background:#fdecec; color:#7f1d1d; }
+  #msg.ok { display:block; background:var(--ok-bg); color:var(--ok-text); }
+  #msg.err { display:block; background:var(--err-bg); color:var(--err-text); }
   footer { padding:32px 0 48px; color:var(--muted); font-size:16px; }
   @media (max-width:560px) { .btn { width:100%; } }
 </style></head>
 <body>
+<div class="spine" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
 <header><div class="wrap">
-  <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true"><rect width="128" height="128" rx="28" fill="#4f46e5"/><path d="M24 48 C40 44 53 46 61 54 L61 96 C53 89 40 87 24 91 Z" fill="#fff"/><path d="M104 48 C88 44 75 46 67 54 L67 96 C75 89 88 87 104 91 Z" fill="#fff"/><path d="M94 15 L96.8 23.2 L105 26 L96.8 28.8 L94 37 L91.2 28.8 L83 26 L91.2 23.2 Z" fill="#fbbf24"/></svg> {{brand}}</div>
+  <div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true"><rect width="128" height="128" rx="28" fill="#1f6b4f"/><path d="M24 48 C40 44 53 46 61 54 L61 96 C53 89 40 87 24 91 Z" fill="#fff"/><path d="M104 48 C88 44 75 46 67 54 L67 96 C75 89 88 87 104 91 Z" fill="#fff"/><path d="M94 15 L96.8 23.2 L105 26 L96.8 28.8 L94 37 L91.2 28.8 L83 26 L91.2 23.2 Z" fill="#f0b457"/></svg> {{brand}}</div>
   <span class="auth-slot" data-auth-slot></span>
   <div class="lang" role="group" aria-label="{{nav.lang|attr}}" id="langs"><a href="{{$url_ko}}" lang="ko" hreflang="ko" {{$cur_ko}}>KO</a><a href="{{$url_en}}" lang="en" hreflang="en" {{$cur_en}}>EN</a></div>
   <a class="back" href="{{$home}}" style="flex-basis:100%">{{nav.home}}</a>

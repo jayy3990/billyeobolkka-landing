@@ -46,16 +46,16 @@ module.exports = async (req, res) => {
   const from = getEnv("CONTACT_FROM_EMAIL") || "빌려볼까 <onboarding@resend.dev>";
 
   const sentAt = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
-  const html = `<!doctype html><html lang="ko"><body style="margin:0;background:#f6f7fb;font-family:'Malgun Gothic','Noto Sans KR',Arial,sans-serif;color:#1d2230;">
+  const html = `<!doctype html><html lang="ko"><body style="margin:0;background:#f4f8f4;font-family:'Malgun Gothic','Noto Sans KR',Arial,sans-serif;color:#1d2230;">
 <div style="max-width:560px;margin:0 auto;padding:32px 20px;">
-  <div style="background:#4f46e5;color:#ffffff;border-radius:16px 16px 0 0;padding:20px 28px;font-size:20px;font-weight:700;">📩 홈페이지 문의가 왔어요</div>
+  <div style="background:#1f6b4f;color:#ffffff;border-radius:16px 16px 0 0;padding:20px 28px;font-size:20px;font-weight:700;">📩 홈페이지 문의가 왔어요</div>
   <div style="background:#ffffff;border-radius:0 0 16px 16px;padding:24px 28px;line-height:1.7;font-size:16px;">
     <p style="margin:0 0 6px;"><b>이름</b> ${esc(name)}</p>
     <p style="margin:0 0 6px;"><b>이메일</b> ${esc(email)}</p>
     <p style="margin:0 0 6px;"><b>보낸 페이지</b> ${lang === "en" ? "영어(EN)" : "한국어(KO)"}</p>
     <p style="margin:0 0 16px;"><b>보낸 시각</b> ${esc(sentAt)} (한국 시간)</p>
     <p style="margin:0 0 6px;"><b>문의 내용</b></p>
-    <div style="white-space:pre-wrap;background:#f6f7fb;border-radius:12px;padding:14px 16px;">${esc(message)}</div>
+    <div style="white-space:pre-wrap;background:#f4f8f4;border-radius:12px;padding:14px 16px;">${esc(message)}</div>
   </div>
   <p style="margin:16px 4px 0;color:#5b6275;font-size:13px;">이 메일에 바로 답장하면 문의하신 분(${esc(email)})에게 갑니다.</p>
 </div></body></html>`;

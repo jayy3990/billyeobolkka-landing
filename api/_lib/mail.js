@@ -67,14 +67,14 @@ function buildEmail(record) {
 </div>`;
   }).join("\n");
 
-  const html = `<!doctype html><html lang="${lang}"><body style="margin:0;background:#f6f7fb;font-family:'Malgun Gothic','Noto Sans KR',Arial,sans-serif;color:#1d2230;">
+  const html = `<!doctype html><html lang="${lang}"><body style="margin:0;background:#f4f8f4;font-family:'Malgun Gothic','Noto Sans KR',Arial,sans-serif;color:#1d2230;">
 <div style="max-width:560px;margin:0 auto;padding:32px 20px;">
-  <div style="background:#4f46e5;color:#ffffff;border-radius:16px 16px 0 0;padding:20px 28px;font-size:20px;font-weight:700;">📚 ${esc(t.heading(lib))}</div>
+  <div style="background:#1f6b4f;color:#ffffff;border-radius:16px 16px 0 0;padding:20px 28px;font-size:20px;font-weight:700;">📚 ${esc(t.heading(lib))}</div>
   <div style="background:#ffffff;border-radius:0 0 16px 16px;padding:24px 28px;font-size:16px;">
     ${when ? `<p style="margin:0 0 16px;color:#5b6275;">${esc(t.sub(when))}</p>` : ""}
     ${rows}
     <p style="margin:16px 0 0;color:#5b6275;font-size:13px;line-height:1.6;">${esc(t.availNote)}<br>${esc(t.ai)}</p>
-    ${link ? `<p style="margin:16px 0 0;"><a href="${esc(link)}" style="color:#4f46e5;font-weight:700;">${esc(t.history)}</a></p>` : ""}
+    ${link ? `<p style="margin:16px 0 0;"><a href="${esc(link)}" style="color:#1f6b4f;font-weight:700;">${esc(t.history)}</a></p>` : ""}
   </div>
   <p style="margin:16px 4px 0;color:#5b6275;font-size:12px;">${esc(t.why)}</p>
 </div></body></html>`;

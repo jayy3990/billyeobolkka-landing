@@ -13,20 +13,20 @@
   .results li span { min-width:0; }
   .results li b { display:block; font-size:16px; }
   .results li small { color:var(--muted); }
-  .mini { flex:none; min-height:40px; padding:0 14px; border-radius:10px; border:2px solid var(--primary); background:var(--surface); color:var(--primary); font:inherit; font-weight:800; cursor:pointer; }
+  .mini { flex:none; min-height:40px; padding:0 16px; border-radius:999px; border:2px solid var(--primary); background:var(--surface); color:var(--primary); font:inherit; font-weight:800; cursor:pointer; }
   .mini:disabled { opacity:.5; cursor:default; }
   .books { list-style:none; display:grid; gap:12px; margin-top:14px; }
-  .book { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px 18px; }
+  .book { background:var(--surface); border:1px solid var(--line); border-left:8px solid var(--primary); border-radius:16px; padding:16px 18px; }
   .book h3 { font-size:18px; line-height:1.4; }
   .book .by { color:var(--muted); font-size:15px; }
   .book .rate { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:10px; }
   .book .rate > span { font-size:14px; color:var(--muted); font-weight:700; }
   .chip { min-height:40px; padding:6px 14px; border-radius:999px; border:2px solid var(--line); background:var(--surface); color:var(--text); font:inherit; font-size:15px; font-weight:700; cursor:pointer; }
-  .chip[aria-pressed="true"] { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .chip[aria-pressed="true"] { background:var(--primary); border-color:var(--primary); color:var(--on-primary); }
   .book .remove { margin-top:10px; background:none; border:0; padding:6px 0; color:var(--muted); font:inherit; font-size:14px; text-decoration:underline; cursor:pointer; }
   #smsg { margin-top:14px; padding:12px 14px; border-radius:12px; font-weight:700; display:none; }
-  #smsg.ok { display:block; background:#e6f6ec; color:#14532d; }
-  #smsg.err { display:block; background:#fdecec; color:#7f1d1d; }
+  #smsg.ok { display:block; background:var(--ok-bg); color:var(--ok-text); }
+  #smsg.err { display:block; background:var(--err-bg); color:var(--err-text); }
   .note { margin-top:10px; color:var(--muted); font-size:14px; }
   [hidden] { display:none !important; }
   @media (max-width:560px) { .searchrow { flex-direction:column; } .searchrow .btn { width:100%; } }
